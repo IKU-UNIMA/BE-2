@@ -27,5 +27,6 @@ func InitMySQL() *gorm.DB {
 func MigrateMySQL() {
 	InitMySQL().AutoMigrate(
 		&model.Prodi{},
+		&model.Fakultas{},
 	)
 }
