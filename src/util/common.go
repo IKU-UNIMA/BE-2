@@ -14,3 +14,11 @@ func GetId(c echo.Context) (int, string) {
 
 	return id, ""
 }
+
+func IsInteger(value string) bool {
+	if value == "" {
+		return true
+	}
+	_, err := strconv.Atoi(value)
+	return err == nil
+}
