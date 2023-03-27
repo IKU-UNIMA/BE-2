@@ -20,6 +20,9 @@ func InitServer() *echo.Echo {
 	fakultas := v1.Group("/fakultas")
 	fakultas.GET("", handler.GetAllFakultasHandler)
 	fakultas.GET("/:id", handler.GetFakultasByIdHandler)
+	fakultas.POST("", handler.InsertFakultasHandler)
+	fakultas.PUT("/:id", handler.EditFakultasHandler)
+	fakultas.DELETE("/:id", handler.DeleteFakultasHandler)
 
 	prodi := v1.Group("/prodi")
 	prodi.GET("", handler.GetAllProdiHandler)
