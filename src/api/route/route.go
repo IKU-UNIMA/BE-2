@@ -31,5 +31,11 @@ func InitServer() *echo.Echo {
 	prodi.PUT("/:id", handler.EditProdiHandler)
 	prodi.DELETE("/:id", handler.DeleteProdiHandler)
 
+	semester := v1.Group("/semester")
+	semester.GET("", handler.GetAllSemesterHandler)
+	semester.POST("", handler.InsertSemesterHandler)
+	semester.PUT("/:id", handler.EditSemesterHandler)
+	semester.DELETE("/:id", handler.DeleteSemesterHandler)
+
 	return app
 }
