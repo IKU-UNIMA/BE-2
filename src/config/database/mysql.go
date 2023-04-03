@@ -30,5 +30,6 @@ func MigrateMySQL() {
 		&model.Fakultas{},
 		&model.Semester{},
 		&model.Admin{},
+		&model.Rektor{},
 	)
 }
