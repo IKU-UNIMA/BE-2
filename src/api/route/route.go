@@ -65,5 +65,12 @@ func InitServer() *echo.Echo {
 	operator.PUT("/:id", handler.EditOperatorHandler)
 	operator.DELETE("/:id", handler.DeleteOperatorHandler)
 
+	mahasiswa := v1.Group("/operator", customMiddleware.Authentication)
+	mahasiswa.GET("", handler.GetAllOperatorHandler)
+	mahasiswa.GET("/:id", handler.GetOperatorByIdHandler)
+	mahasiswa.POST("", handler.InsertOperatorHandler, customMiddleware.GrantAdminUmum)
+	mahasiswa.PUT("/:id", handler.EditOperatorHandler, customMiddleware.GrantAdminUmum)
+	mahasiswa.DELETE("/:id", handler.DeleteOperatorHandler, customMiddleware.GrantAdminUmum)
+
 	return app
 }
