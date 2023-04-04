@@ -4,7 +4,7 @@ type UserRole string
 
 const (
 	ADMIN     UserRole = "admin"
-	DOSEN     UserRole = "operator"
+	OPERATOR  UserRole = "operator"
 	REKTOR    UserRole = "rektor"
 	MAHASISWA UserRole = "mahasiswa"
 )
