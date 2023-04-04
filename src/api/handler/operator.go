@@ -16,7 +16,7 @@ import (
 const getOperatorQuery = "SELECT operator.id, nama, nip, akun.email, id_prodi FROM operator JOIN akun where operator.id = akun.id"
 
 type operatorQueryParam struct {
-	Nip  string `query:"nidn"`
+	Nip  string `query:"nip"`
 	Nama string `query:"nama"`
 	Page int    `query:"page"`
 }
@@ -33,7 +33,7 @@ func GetAllOperatorHandler(c echo.Context) error {
 	condition := ""
 
 	if queryParams.Nama != "" {
-		condition = "nama = " + queryParams.Nama
+		condition = "UPPER(nama) LIKE '%" + strings.ToUpper(queryParams.Nama) + "%'"
 		if queryParams.Nip != "" {
 			condition = "nip = " + queryParams.Nip
 		}
