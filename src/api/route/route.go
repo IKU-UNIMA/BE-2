@@ -58,5 +58,12 @@ func InitServer() *echo.Echo {
 	rektor.PUT("/:id", handler.EditRektorHandler)
 	rektor.DELETE("/:id", handler.DeleteRektorHandler)
 
+	operator := v1.Group("/operator", customMiddleware.Authentication, customMiddleware.GrantAdminUmum)
+	operator.GET("", handler.GetAllOperatorHandler)
+	operator.GET("/:id", handler.GetOperatorByIdHandler)
+	operator.POST("", handler.InsertOperatorHandler)
+	operator.PUT("/:id", handler.EditOperatorHandler)
+	operator.DELETE("/:id", handler.DeleteOperatorHandler)
+
 	return app
 }
