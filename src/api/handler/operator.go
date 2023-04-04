@@ -45,7 +45,7 @@ func GetAllOperatorHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
 
-	return util.SuccessResponse(c, http.StatusOK, result)
+	return util.SuccessResponse(c, http.StatusOK, util.Pagination{Page: queryParams.Page, Data: result})
 }
 
 func GetOperatorByIdHandler(c echo.Context) error {
