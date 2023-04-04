@@ -3,6 +3,8 @@ package route
 import (
 	"be-2/src/api/handler"
 
+	customMiddleware "be-2/src/api/middleware"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -36,6 +38,11 @@ func InitServer() *echo.Echo {
 	semester.POST("", handler.InsertSemesterHandler)
 	semester.PUT("/:id", handler.EditSemesterHandler)
 	semester.DELETE("/:id", handler.DeleteSemesterHandler)
+
+	akun := v1.Group("/akun")
+	akun.POST("/login", handler.LoginHandler)
+	akun.PATCH("/password/change", handler.ChangePasswordHandler, customMiddleware.Authentication)
+	akun.PATCH("/password/reset/:id", handler.ResetPasswordHandler, customMiddleware.Authentication, customMiddleware.GrantAdminUmum)
 
 	return app
 }
