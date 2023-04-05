@@ -4,6 +4,7 @@ import (
 	"be-2/src/api/route"
 	"be-2/src/config/database"
 	"be-2/src/config/env"
+	"be-2/src/config/storage"
 
 	"github.com/joho/godotenv"
 )
@@ -16,6 +17,8 @@ func main() {
 
 	// migrate gorm
 	database.MigrateMySQL()
+
+	storage.InitGDrive()
 
 	app := route.InitServer()
 	app.Logger.Fatal(app.Start(":" + env.GetServerEnv()))
