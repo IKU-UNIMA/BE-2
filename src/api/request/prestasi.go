@@ -3,7 +3,6 @@ package request
 import "be-2/src/model"
 
 type Prestasi struct {
-	IdMahasiswa       int    `form:"id_mahasiswa"`
 	IdSemester        int    `form:"id_semester"`
 	IdDosenPembimbing int    `form:"id_dosen_pembimbing"`
 	Nama              string `form:"nama"`
@@ -12,9 +11,8 @@ type Prestasi struct {
 	Peringkat         string `form:"peringkat"`
 }
 
-func (r *Prestasi) MapRequest(idFakultas, idProdi int, sertifikat string) *model.Prestasi {
+func (r *Prestasi) MapRequest(idMahasiswa, idFakultas, idProdi int, sertifikat string) *model.Prestasi {
 	return &model.Prestasi{
-		IdMahasiswa:       r.IdMahasiswa,
 		IdFakultas:        idFakultas,
 		IdProdi:           idProdi,
 		IdSemester:        r.IdSemester,
