@@ -13,6 +13,7 @@ type Prestasi struct {
 
 func (r *Prestasi) MapRequest(idMahasiswa, idFakultas, idProdi int, sertifikat string) *model.Prestasi {
 	return &model.Prestasi{
+		IdMahasiswa:       idMahasiswa,
 		IdFakultas:        idFakultas,
 		IdProdi:           idProdi,
 		IdSemester:        r.IdSemester,
