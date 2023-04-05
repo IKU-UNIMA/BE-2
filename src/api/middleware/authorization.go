@@ -18,3 +18,14 @@ func GrantAdminUmum(next echo.HandlerFunc) echo.HandlerFunc {
 		return next(c)
 	}
 }
+
+func GrantMahasiswa(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := util.GetClaimsFromContext(c)
+		if claims["role"].(string) != string(util.MAHASISWA) {
+			return util.FailedResponse(c, http.StatusUnauthorized, nil)
+		}
+
+		return next(c)
+	}
+}
