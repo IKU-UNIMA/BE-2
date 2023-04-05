@@ -7,9 +7,9 @@ type (
 		IdProdi     int                `json:"-"`
 		IdSemester  int                `json:"-"`
 		Nama        string             `json:"nama"`
-		Mahasiswa   MahasiswaReference `gorm:"foreignKey:IdMahasiswa;constraint:OnDelete:CASCADE"`
-		Prodi       ProdiReference     `gorm:"foreignKey:IdProdi;constraint:OnDelete: SET NULL"`
-		Semester    Semester           `gorm:"foreignKey:IdSemester;constraint:OnDelete:CASCADE"`
+		Mahasiswa   MahasiswaReference `gorm:"foreignKey:IdMahasiswa;constraint:OnDelete:CASCADE" json:"mahasiswa"`
+		Prodi       ProdiReference     `gorm:"foreignKey:IdProdi;constraint:OnDelete: SET NULL" json:"prodi"`
+		Semester    Semester           `gorm:"foreignKey:IdSemester;constraint:OnDelete:CASCADE" json:"semester"`
 	}
 
 	DetailPrestasi struct {
@@ -24,11 +24,11 @@ type (
 		Penyelenggara     string             `json:"penyelenggara"`
 		Peringkat         string             `json:"peringkat"`
 		Sertifikat        string             `json:"sertifikat"`
-		Mahasiswa         MahasiswaReference `gorm:"foreignKey:IdMahasiswa"`
-		Fakultas          Fakultas           `gorm:"foreignKey:IdFakultas"`
-		Prodi             ProdiReference     `gorm:"foreignKey:IdProdi"`
-		Semester          Semester           `gorm:"foreignKey:IdSemester"`
-		DosenPembimbing   Dosen              `gorm:"foreignKey:IdDosenPembimbing"`
+		Mahasiswa         MahasiswaReference `gorm:"foreignKey:IdMahasiswa" json:"mahasiswa"`
+		Fakultas          Fakultas           `gorm:"foreignKey:IdFakultas" json:"fakultas"`
+		Prodi             ProdiReference     `gorm:"foreignKey:IdProdi" json:"prodi"`
+		Semester          Semester           `gorm:"foreignKey:IdSemester" json:"semester"`
+		DosenPembimbing   Dosen              `gorm:"foreignKey:IdDosenPembimbing" json:"dosen_pembimbing"`
 	}
 
 	MahasiswaReference struct {
