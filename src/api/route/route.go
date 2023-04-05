@@ -79,5 +79,13 @@ func InitServer() *echo.Echo {
 	dosen.PUT("/:id", handler.EditDosenHandler, customMiddleware.GrantAdminUmum)
 	dosen.DELETE("/:id", handler.DeleteDosenHandler, customMiddleware.GrantAdminUmum)
 
+	prestasi := v1.Group("/prestasi", customMiddleware.Authentication)
+	prestasi.GET("", handler.GetAllPrestasiHandler)
+	prestasi.GET("/:id", handler.GetPrestasiByIdHandler)
+	prestasi.POST("", handler.InsertPrestasiHandler, customMiddleware.GrantMahasiswa)
+	prestasi.PUT("/:id", handler.EditPrestasiHandler)
+	prestasi.DELETE("/:id", handler.DeletePrestasiHandler)
+	prestasi.PATCH("/sertifikat", handler.EditSertifikatPrestasiHandler)
+
 	return app
 }
