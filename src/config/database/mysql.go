@@ -35,5 +35,6 @@ func MigrateMySQL() {
 		&model.Operator{},
 		&model.Mahasiswa{},
 		&model.Dosen{},
+		&model.Prestasi{},
 	)
 }
