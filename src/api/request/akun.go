@@ -7,7 +7,6 @@ type (
 	}
 
 	ChangePassword struct {
-		PasswordLama string `json:"password_lama"`
 		PasswordBaru string `json:"password_baru"`
 	}
 )
