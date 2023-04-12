@@ -75,14 +75,6 @@ func ChangePasswordHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
 
-	if !util.ValidateHash(request.PasswordLama, data.Password) {
-		return util.FailedResponse(c, http.StatusUnauthorized, []string{"password anda berbeda dengan yang lama"})
-	}
-
-	if request.PasswordBaru == "" {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{"password baru tidak boleh kosong"})
-	}
-
 	if err := db.WithContext(ctx).Table("akun").Where("id", id).Update("password", util.HashPassword(request.PasswordBaru)).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
