@@ -12,9 +12,11 @@ type (
 	}
 
 	MahasiswaReference struct {
-		ID   int    `json:"id"`
-		Nama string `json:"nama"`
-		Nim  string `json:"nim"`
+		ID      int    `json:"id"`
+		IdProdi int    `json:"-"`
+		Nama    string `json:"nama"`
+		Nim     string `json:"nim"`
+		Prodi   Prodi  `gorm:"foreignKey:IdProdi" json:"prodi"`
 	}
 )
 
