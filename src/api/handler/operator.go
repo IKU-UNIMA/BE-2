@@ -30,6 +30,7 @@ func GetAllOperatorHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	result := []response.Operator{}
+	limit := 20
 	condition := ""
 
 	if queryParams.Nama != "" {
@@ -40,7 +41,7 @@ func GetAllOperatorHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).Preload("Prodi").Raw(getOperatorQuery).
-		Offset(util.CountOffset(queryParams.Page)).Limit(20).
+		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Where(condition).Find(&result).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
