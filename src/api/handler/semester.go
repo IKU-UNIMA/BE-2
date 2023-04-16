@@ -26,7 +26,7 @@ func GetAllSemesterHandler(c echo.Context) error {
 func InsertSemesterHandler(c echo.Context) error {
 	req := &request.Semester{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -42,12 +42,12 @@ func InsertSemesterHandler(c echo.Context) error {
 func EditSemesterHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	req := &request.Semester{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -71,7 +71,7 @@ func EditSemesterHandler(c echo.Context) error {
 func DeleteSemesterHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()

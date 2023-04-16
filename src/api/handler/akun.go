@@ -14,7 +14,7 @@ import (
 func LoginHandler(c echo.Context) error {
 	request := &request.Login{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -23,14 +23,14 @@ func LoginHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(data, "email", request.Email).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusUnauthorized, []string{"email atau password salah"})
+			return util.FailedResponse(c, http.StatusUnauthorized, map[string]string{"message": "email atau password salah"})
 		}
 
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
 
 	if !util.ValidateHash(request.Password, data.Password) {
-		return util.FailedResponse(c, http.StatusUnauthorized, []string{"email atau password salah"})
+		return util.FailedResponse(c, http.StatusUnauthorized, map[string]string{"message": "email atau password salah"})
 	}
 
 	var bagian string
@@ -58,7 +58,7 @@ func LoginHandler(c echo.Context) error {
 func ChangePasswordHandler(c echo.Context) error {
 	request := &request.ChangePassword{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -69,7 +69,7 @@ func ChangePasswordHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(data, "id", id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, []string{"user tidak ditemukan"})
+			return util.FailedResponse(c, http.StatusNotFound, map[string]string{"message": "user tidak ditemukan"})
 		}
 
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -85,7 +85,7 @@ func ChangePasswordHandler(c echo.Context) error {
 func ResetPasswordHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -93,7 +93,7 @@ func ResetPasswordHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(new(model.Akun), "id", id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, []string{"user tidak ditemukan"})
+			return util.FailedResponse(c, http.StatusNotFound, map[string]string{"message": "user tidak ditemukan"})
 		}
 
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
