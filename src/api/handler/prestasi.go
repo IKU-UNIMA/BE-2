@@ -103,8 +103,7 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).
-		Preload("Mahasiswa").Preload("Fakultas").Preload("Prodi").
-		Preload("Semester").Preload("DosenPembimbing").
+		Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").
 		Preload("DosenPembimbing.Fakultas").Preload("DosenPembimbing.Prodi").
 		Table("prestasi").First(result, id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
