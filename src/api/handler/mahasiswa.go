@@ -31,6 +31,7 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.Mahasiswa{}
+	limit := 20
 	condition := ""
 
 	if queryParams.Prodi != 0 {
@@ -53,7 +54,7 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).Preload("Prodi.Fakultas").Raw(getMahasiswaQuery).
-		Offset(util.CountOffset(queryParams.Page)).Limit(20).
+		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Where(condition).Find(&data).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}

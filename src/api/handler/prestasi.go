@@ -33,6 +33,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	result := []response.Prestasi{}
+	limit := 20
 	condition := ""
 
 	claims := util.GetClaimsFromContext(c)
@@ -74,7 +75,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).Preload("Mahasiswa").Preload("Prodi").Preload("Semester").Where(condition).
-		Offset(util.CountOffset(queryParams.Page)).Limit(20).
+		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Find(&result).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
