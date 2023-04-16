@@ -14,6 +14,7 @@ type DetailFakultas struct {
 type ProdiReference struct {
 	ID         int    `json:"id"`
 	IdFakultas int    `json:"-"`
+	KodeProdi  int    `json:"kode_prodi"`
 	Nama       string `json:"nama"`
 	Jenjang    string `json:"jenjang"`
 }
