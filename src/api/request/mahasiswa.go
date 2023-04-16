@@ -3,11 +3,11 @@ package request
 import "be-2/src/model"
 
 type Mahasiswa struct {
-	IdProdi      int    `json:"id_prodi"`
-	Nim          string `json:"nim"`
-	Nama         string `json:"nama"`
-	Email        string `json:"email"`
-	JenisKelamin string `json:"jenis_kelamin"`
+	IdProdi      int    `json:"id_prodi" validate:"required"`
+	Nim          string `json:"nim" validate:"required"`
+	Nama         string `json:"nama" validate:"required"`
+	Email        string `json:"email" validate:"required,email"`
+	JenisKelamin string `json:"jenis_kelamin" validate:"required"`
 }
 
 func (r *Mahasiswa) MapRequest() *model.Mahasiswa {

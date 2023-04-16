@@ -3,10 +3,10 @@ package request
 import "be-2/src/model"
 
 type Operator struct {
-	Nama    string `json:"nama"`
-	Nip     string `json:"nip"`
-	Email   string `json:"email"`
-	IdProdi int    `json:"id_prodi"`
+	Nama    string `json:"nama" validate:"required"`
+	Nip     string `json:"nip" validate:"required"`
+	Email   string `json:"email" validate:"required,email"`
+	IdProdi int    `json:"id_prodi" validate:"required"`
 }
 
 func (r *Operator) MapRequest() *model.Operator {

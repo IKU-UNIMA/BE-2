@@ -27,7 +27,7 @@ type prestasiQueryParam struct {
 func GetAllPrestasiHandler(c echo.Context) error {
 	queryParams := &prestasiQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -88,7 +88,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 func GetPrestasiByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -120,7 +120,11 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 func InsertPrestasiHandler(c echo.Context) error {
 	req := &request.Prestasi{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(req); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -141,7 +145,7 @@ func InsertPrestasiHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Raw(mahasiswaQuery).First(mahasiswa).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, []string{"mahasiswa tidak ditemukan"})
+			return util.FailedResponse(c, http.StatusNotFound, map[string]string{"message": "mahasiswa tidak ditemukan"})
 		}
 
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -149,11 +153,11 @@ func InsertPrestasiHandler(c echo.Context) error {
 
 	sertifikat, _ := c.FormFile("sertifikat")
 	if sertifikat == nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{"sertifikat tidak boleh kosong"})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "sertifikat tidak boleh kosong"})
 	}
 
 	if err := util.CheckFileIsPDF(sertifikat); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	dSertifikat, err := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
@@ -175,12 +179,16 @@ func InsertPrestasiHandler(c echo.Context) error {
 func EditPrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	req := &request.Prestasi{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(req); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -195,7 +203,7 @@ func EditPrestasiHandler(c echo.Context) error {
 	sertifikat, _ := c.FormFile("sertifikat")
 	if sertifikat != nil {
 		if err := util.CheckFileIsPDF(sertifikat); err != nil {
-			return util.FailedResponse(c, http.StatusBadRequest, []string{err.Error()})
+			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
 		}
 
 		dSertifikat, err := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
@@ -208,7 +216,8 @@ func EditPrestasiHandler(c echo.Context) error {
 		omit = append(omit, "sertifikat")
 	}
 
-	if err := db.WithContext(ctx).Omit(omit...).Where("id", id).Updates(req.MapRequest(0, 0, 0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
+	if err := db.WithContext(ctx).Omit(omit...).Where("id", id).
+		Updates(req.MapRequest(0, 0, 0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
 		storage.DeleteFile(idSertifikat)
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
@@ -219,7 +228,7 @@ func EditPrestasiHandler(c echo.Context) error {
 func DeletePrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -244,7 +253,7 @@ func DeletePrestasiHandler(c echo.Context) error {
 func EditSertifikatPrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -256,11 +265,11 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 
 	sertifikat, _ := c.FormFile("sertifikat")
 	if sertifikat == nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{"sertifikat tidak boleh kosong"})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "sertifikat tidak boleh kosong"})
 	}
 
 	if err := util.CheckFileIsPDF(sertifikat); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	dSertifikat, errDrive := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())

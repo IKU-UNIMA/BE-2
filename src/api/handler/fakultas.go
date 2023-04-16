@@ -31,7 +31,7 @@ func GetAllFakultasHandler(c echo.Context) error {
 func GetFakultasByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -52,7 +52,11 @@ func GetFakultasByIdHandler(c echo.Context) error {
 func InsertFakultasHandler(c echo.Context) error {
 	request := &request.Fakultas{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(request); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -60,7 +64,7 @@ func InsertFakultasHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Create(request.MapRequest()).Error; err != nil {
 		if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-			return util.FailedResponse(c, http.StatusBadRequest, []string{"fakultas sudah ada"})
+			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "fakultas sudah ada"})
 		}
 
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -72,12 +76,16 @@ func InsertFakultasHandler(c echo.Context) error {
 func EditFakultasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	request := &request.Fakultas{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err.Error()})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(request); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -94,7 +102,7 @@ func EditFakultasHandler(c echo.Context) error {
 	if err := db.WithContext(ctx).Where("id", id).Updates(request.MapRequest()).Error; err != nil {
 		if err != nil {
 			if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-				return util.FailedResponse(c, http.StatusBadRequest, []string{"fakultas sudah ada"})
+				return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "fakultas sudah ada"})
 			}
 
 			return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -107,7 +115,7 @@ func EditFakultasHandler(c echo.Context) error {
 func DeleteFakultasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, []string{err})
+		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
