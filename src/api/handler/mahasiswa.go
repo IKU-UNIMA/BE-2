@@ -52,7 +52,7 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 		}
 	}
 
-	if err := db.WithContext(ctx).Preload("Prodi").Raw(getMahasiswaQuery).
+	if err := db.WithContext(ctx).Preload("Prodi.Fakultas").Raw(getMahasiswaQuery).
 		Offset(util.CountOffset(queryParams.Page)).Limit(20).
 		Where(condition).Find(&data).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -72,7 +72,7 @@ func GetMahasiswaByIdHandler(c echo.Context) error {
 	data := &response.Mahasiswa{}
 
 	condition := getMahasiswaQuery + fmt.Sprintf(" AND mahasiswa.id = %d", id)
-	if err := db.WithContext(ctx).Preload("Prodi").Raw(condition).First(data).Error; err != nil {
+	if err := db.WithContext(ctx).Preload("Prodi.Fakultas").Raw(condition).First(data).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
 			return util.FailedResponse(c, http.StatusNotFound, nil)
 		}
