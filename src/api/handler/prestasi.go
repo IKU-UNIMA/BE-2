@@ -123,6 +123,10 @@ func InsertPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
+	if err := c.Validate(req); err != nil {
+		return err
+	}
+
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	claims := util.GetClaimsFromContext(c)
@@ -181,6 +185,10 @@ func EditPrestasiHandler(c echo.Context) error {
 	req := &request.Prestasi{}
 	if err := c.Bind(req); err != nil {
 		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(req); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

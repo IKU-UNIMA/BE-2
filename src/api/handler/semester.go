@@ -29,6 +29,10 @@ func InsertSemesterHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
+	if err := c.Validate(req); err != nil {
+		return err
+	}
+
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
@@ -48,6 +52,10 @@ func EditSemesterHandler(c echo.Context) error {
 	req := &request.Semester{}
 	if err := c.Bind(req); err != nil {
 		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(req); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

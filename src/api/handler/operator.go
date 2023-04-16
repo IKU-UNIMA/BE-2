@@ -76,6 +76,10 @@ func InsertOperatorHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
+	if err := c.Validate(request); err != nil {
+		return err
+	}
+
 	db := database.InitMySQL()
 	tx := db.Begin()
 	ctx := c.Request().Context()
@@ -122,6 +126,10 @@ func EditOperatorHandler(c echo.Context) error {
 	request := &request.Operator{}
 	if err := c.Bind(request); err != nil {
 		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+	}
+
+	if err := c.Validate(request); err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
