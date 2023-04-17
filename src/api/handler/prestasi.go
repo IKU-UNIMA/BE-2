@@ -158,7 +158,7 @@ func InsertPrestasiHandler(c echo.Context) error {
 		idMahasiswa, util.CreateFileUrl(dSertifikat.Id))).Error; err != nil {
 		storage.DeleteFile(dSertifikat.Id)
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return checkPrestasiError(c, err.Error())
 	}
 
 	return util.SuccessResponse(c, http.StatusCreated, nil)
@@ -207,7 +207,8 @@ func EditPrestasiHandler(c echo.Context) error {
 	if err := db.WithContext(ctx).Omit(omit...).Where("id", id).
 		Updates(req.MapRequest(0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
 		storage.DeleteFile(idSertifikat)
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+
+		return checkPrestasiError(c, err.Error())
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -289,4 +290,20 @@ func prestasiAuthorization(c echo.Context, id int, db *gorm.DB, ctx context.Cont
 	}
 
 	return result == idMahasiswa
+}
+
+func checkPrestasiError(c echo.Context, err string) error {
+	message := ""
+	if strings.Contains(err, "dosen") {
+		message = "dosen pembimbing"
+	} else if strings.Contains(err, "semester") {
+		message = "semester"
+	}
+
+	if message != "" {
+		message += " tidak ditemukan"
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": message})
+	}
+
+	return util.FailedResponse(c, http.StatusInternalServerError, nil)
 }
