@@ -74,7 +74,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 		}
 	}
 
-	if err := db.WithContext(ctx).Preload("Mahasiswa").Preload("Prodi").Preload("Semester").Where(condition).
+	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Find(&result).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -131,19 +131,8 @@ func InsertPrestasiHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 	claims := util.GetClaimsFromContext(c)
 	idMahasiswa := int(claims["id"].(float64))
-	mahasiswa := &struct {
-		IdProdi    int
-		IdFakultas int
-	}{}
 
-	mahasiswaQuery := fmt.Sprintf(
-		`SELECT id_prodi, prodi.id_fakultas 
-		FROM mahasiswa join prodi
-		WHERE mahasiswa.id_prodi = prodi.id AND mahasiswa.id = %d`,
-		idMahasiswa,
-	)
-
-	if err := db.WithContext(ctx).Raw(mahasiswaQuery).First(mahasiswa).Error; err != nil {
+	if err := db.WithContext(ctx).First(new(model.Mahasiswa), "id", idMahasiswa).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
 			return util.FailedResponse(c, http.StatusNotFound, map[string]string{"message": "mahasiswa tidak ditemukan"})
 		}
@@ -166,8 +155,7 @@ func InsertPrestasiHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).Create(req.MapRequest(
-		idMahasiswa, mahasiswa.IdProdi,
-		mahasiswa.IdFakultas, util.CreateFileUrl(dSertifikat.Id))).Error; err != nil {
+		idMahasiswa, util.CreateFileUrl(dSertifikat.Id))).Error; err != nil {
 		storage.DeleteFile(dSertifikat.Id)
 
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -217,7 +205,7 @@ func EditPrestasiHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).Omit(omit...).Where("id", id).
-		Updates(req.MapRequest(0, 0, 0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
+		Updates(req.MapRequest(0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
 		storage.DeleteFile(idSertifikat)
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
 	}
