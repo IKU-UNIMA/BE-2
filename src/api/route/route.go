@@ -91,5 +91,11 @@ func InitServer() *echo.Echo {
 	prestasi.DELETE("/:id", handler.DeletePrestasiHandler)
 	prestasi.PATCH("/sertifikat", handler.EditSertifikatPrestasiHandler)
 
+	kategoriProgramKM := v1.Group("/kategori-program", customMiddleware.Authentication)
+	kategoriProgramKM.GET("", handler.GetAllKategoriProgramProgramKMHandler)
+	kategoriProgramKM.POST("", handler.InsertKategoriProgramKMHandler, customMiddleware.GrantAdminIKU2)
+	kategoriProgramKM.PUT("/:id", handler.EditKategoriProgramKMHandler, customMiddleware.GrantAdminIKU2)
+	kategoriProgramKM.DELETE("/:id", handler.DeleteKategoriProgramKMHandler, customMiddleware.GrantAdminIKU2)
+
 	return app
 }
