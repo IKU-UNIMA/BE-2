@@ -18,10 +18,10 @@ import (
 )
 
 type prestasiQueryParam struct {
-	Prodi    int    `query:"prodi"`
-	Semester int    `query:"semester"`
-	Nama     string `query:"nama"`
-	Page     int    `query:"page"`
+	Prodi    int `query:"prodi"`
+	Semester int `query:"semester"`
+	Nim      int `query:"nim"`
+	Page     int `query:"page"`
 }
 
 func GetAllPrestasiHandler(c echo.Context) error {
@@ -38,43 +38,45 @@ func GetAllPrestasiHandler(c echo.Context) error {
 
 	claims := util.GetClaimsFromContext(c)
 	role := claims["role"].(string)
-	idMahasiswa := int(claims["id"].(float64))
+	id := int(claims["id"].(float64))
 	idProdi := int(claims["id_prodi"].(float64))
-
-	if role == string(util.OPERATOR) {
-		queryParams.Prodi = idProdi
-	}
+	nim := 0
 
 	if role == string(util.MAHASISWA) {
-		queryParams.Prodi = 0
-		condition = fmt.Sprintf("id_mahasiswa = %d", idMahasiswa)
-	}
+		if err := db.WithContext(ctx).Table("mahasiswa").Select("nim").Where("id", id).Scan(&nim).Error; err != nil {
+			return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		}
 
-	if queryParams.Prodi != 0 {
-		if condition != "" {
-			condition += fmt.Sprintf(" AND id_prodi = %d", queryParams.Prodi)
-		} else {
-			condition = fmt.Sprintf("id_prodi = %d", queryParams.Prodi)
+		condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+	} else {
+		if role == string(util.OPERATOR) {
+			queryParams.Prodi = idProdi
+		}
+
+		if queryParams.Nim != 0 {
+			condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+		}
+
+		if queryParams.Prodi != 0 {
+			if condition != "" {
+				condition += fmt.Sprintf(" AND mahasiswa.id_prodi = %d", queryParams.Prodi)
+			} else {
+				condition = fmt.Sprintf("mahasiswa.id_prodi = %d", queryParams.Prodi)
+			}
+		}
+
+		if queryParams.Semester != 0 {
+			if condition != "" {
+				condition += fmt.Sprintf(" AND id_semester = %d", queryParams.Semester)
+			} else {
+				condition = fmt.Sprintf("id_semester = %d", queryParams.Semester)
+			}
 		}
 	}
 
-	if queryParams.Semester != 0 {
-		if condition != "" {
-			condition += fmt.Sprintf(" AND id_semester = %d", queryParams.Semester)
-		} else {
-			condition = fmt.Sprintf("id_semester = %d", queryParams.Semester)
-		}
-	}
-
-	if queryParams.Nama != "" {
-		if condition != "" {
-			condition += " AND UPPER(nama) LIKE '%" + strings.ToUpper(queryParams.Nama) + "%'"
-		} else {
-			condition = "UPPER(nama) LIKE '%" + strings.ToUpper(queryParams.Nama) + "%'"
-		}
-	}
-
-	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").Where(condition).
+	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").
+		Joins("JOIN mahasiswa ON mahasiswa.id = prestasi.id_mahasiswa").
+		Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Find(&result).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
