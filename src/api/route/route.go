@@ -89,7 +89,7 @@ func InitServer() *echo.Echo {
 	prestasi.POST("", handler.InsertPrestasiHandler, customMiddleware.GrantMahasiswa)
 	prestasi.PUT("/:id", handler.EditPrestasiHandler)
 	prestasi.DELETE("/:id", handler.DeletePrestasiHandler)
-	prestasi.PATCH("/sertifikat", handler.EditSertifikatPrestasiHandler)
+	prestasi.PATCH("/:id/sertifikat", handler.EditSertifikatPrestasiHandler)
 
 	kategoriProgramKM := v1.Group("/kategori-program", customMiddleware.Authentication)
 	kategoriProgramKM.GET("", handler.GetAllKategoriProgramProgramKMHandler)
