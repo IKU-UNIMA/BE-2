@@ -6,8 +6,8 @@ type (
 		IdMahasiswa int                `json:"-"`
 		IdSemester  int                `json:"-"`
 		Nama        string             `json:"nama"`
-		Mahasiswa   MahasiswaReference `gorm:"foreignKey:IdMahasiswa;constraint:OnDelete:CASCADE" json:"mahasiswa"`
-		Semester    Semester           `gorm:"foreignKey:IdSemester;constraint:OnDelete:CASCADE" json:"semester"`
+		Mahasiswa   MahasiswaReference `gorm:"foreignKey:IdMahasiswa" json:"mahasiswa"`
+		Semester    Semester           `gorm:"foreignKey:IdSemester" json:"semester"`
 	}
 
 	DetailPrestasi struct {

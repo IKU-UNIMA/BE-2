@@ -11,8 +11,6 @@ type Prestasi struct {
 	Peringkat         string    `gorm:"type:varchar(30)"`
 	Sertifikat        string    `gorm:"type:text"`
 	Mahasiswa         Mahasiswa `gorm:"foreignKey:IdMahasiswa;constraint:OnDelete:CASCADE"`
-	Fakultas          Fakultas  `gorm:"foreignKey:IdFakultas"`
-	Prodi             Prodi     `gorm:"foreignKey:IdProdi;constraint:OnDelete:SET NULL"`
 	Semester          Semester  `gorm:"foreignKey:IdSemester;constraint:OnDelete:CASCADE"`
 	DosenPembimbing   Dosen     `gorm:"foreignKey:IdDosenPembimbing;constraint:OnDelete:SET NULL"`
 }
