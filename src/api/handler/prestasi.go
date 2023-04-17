@@ -188,28 +188,8 @@ func EditPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusUnauthorized, nil)
 	}
 
-	omit := []string{"id_prodi", "id_mahasiswa", "id_fakultas"}
-	idSertifikat := ""
-	sertifikat, _ := c.FormFile("sertifikat")
-	if sertifikat != nil {
-		if err := util.CheckFileIsPDF(sertifikat); err != nil {
-			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
-		}
-
-		dSertifikat, err := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
-		if err != nil {
-			return util.FailedResponse(c, http.StatusInternalServerError, nil)
-		}
-
-		idSertifikat = dSertifikat.Id
-	} else {
-		omit = append(omit, "sertifikat")
-	}
-
-	if err := db.WithContext(ctx).Omit(omit...).Where("id", id).
-		Updates(req.MapRequest(0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
-		storage.DeleteFile(idSertifikat)
-
+	if err := db.WithContext(ctx).Omit("id_mahasiswa", "sertifikat").
+		Where("id", id).Updates(req.MapRequest(0, "")).Error; err != nil {
 		return checkPrestasiError(c, err.Error())
 	}
 
