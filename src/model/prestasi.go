@@ -3,8 +3,6 @@ package model
 type Prestasi struct {
 	ID                int `gorm:"primaryKey"`
 	IdMahasiswa       int
-	IdFakultas        int
-	IdProdi           int
 	IdSemester        int
 	IdDosenPembimbing int       `gorm:"default:null"`
 	Nama              string    `gorm:"type:varchar(255)"`

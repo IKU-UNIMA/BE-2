@@ -18,10 +18,10 @@ import (
 )
 
 type prestasiQueryParam struct {
-	Prodi    int    `query:"prodi"`
-	Semester int    `query:"semester"`
-	Nama     string `query:"nama"`
-	Page     int    `query:"page"`
+	Prodi    int `query:"prodi"`
+	Semester int `query:"semester"`
+	Nim      int `query:"nim"`
+	Page     int `query:"page"`
 }
 
 func GetAllPrestasiHandler(c echo.Context) error {
@@ -38,43 +38,45 @@ func GetAllPrestasiHandler(c echo.Context) error {
 
 	claims := util.GetClaimsFromContext(c)
 	role := claims["role"].(string)
-	idMahasiswa := int(claims["id"].(float64))
+	id := int(claims["id"].(float64))
 	idProdi := int(claims["id_prodi"].(float64))
-
-	if role == string(util.OPERATOR) {
-		queryParams.Prodi = idProdi
-	}
+	nim := 0
 
 	if role == string(util.MAHASISWA) {
-		queryParams.Prodi = 0
-		condition = fmt.Sprintf("id_mahasiswa = %d", idMahasiswa)
-	}
+		if err := db.WithContext(ctx).Table("mahasiswa").Select("nim").Where("id", id).Scan(&nim).Error; err != nil {
+			return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		}
 
-	if queryParams.Prodi != 0 {
-		if condition != "" {
-			condition += fmt.Sprintf(" AND id_prodi = %d", queryParams.Prodi)
-		} else {
-			condition = fmt.Sprintf("id_prodi = %d", queryParams.Prodi)
+		condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+	} else {
+		if role == string(util.OPERATOR) {
+			queryParams.Prodi = idProdi
+		}
+
+		if queryParams.Nim != 0 {
+			condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+		}
+
+		if queryParams.Prodi != 0 {
+			if condition != "" {
+				condition += fmt.Sprintf(" AND mahasiswa.id_prodi = %d", queryParams.Prodi)
+			} else {
+				condition = fmt.Sprintf("mahasiswa.id_prodi = %d", queryParams.Prodi)
+			}
+		}
+
+		if queryParams.Semester != 0 {
+			if condition != "" {
+				condition += fmt.Sprintf(" AND id_semester = %d", queryParams.Semester)
+			} else {
+				condition = fmt.Sprintf("id_semester = %d", queryParams.Semester)
+			}
 		}
 	}
 
-	if queryParams.Semester != 0 {
-		if condition != "" {
-			condition += fmt.Sprintf(" AND id_semester = %d", queryParams.Semester)
-		} else {
-			condition = fmt.Sprintf("id_semester = %d", queryParams.Semester)
-		}
-	}
-
-	if queryParams.Nama != "" {
-		if condition != "" {
-			condition += " AND UPPER(nama) LIKE '%" + strings.ToUpper(queryParams.Nama) + "%'"
-		} else {
-			condition = "UPPER(nama) LIKE '%" + strings.ToUpper(queryParams.Nama) + "%'"
-		}
-	}
-
-	if err := db.WithContext(ctx).Preload("Mahasiswa").Preload("Prodi").Preload("Semester").Where(condition).
+	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").
+		Joins("JOIN mahasiswa ON mahasiswa.id = prestasi.id_mahasiswa").
+		Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Find(&result).Error; err != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -131,19 +133,8 @@ func InsertPrestasiHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 	claims := util.GetClaimsFromContext(c)
 	idMahasiswa := int(claims["id"].(float64))
-	mahasiswa := &struct {
-		IdProdi    int
-		IdFakultas int
-	}{}
 
-	mahasiswaQuery := fmt.Sprintf(
-		`SELECT id_prodi, prodi.id_fakultas 
-		FROM mahasiswa join prodi
-		WHERE mahasiswa.id_prodi = prodi.id AND mahasiswa.id = %d`,
-		idMahasiswa,
-	)
-
-	if err := db.WithContext(ctx).Raw(mahasiswaQuery).First(mahasiswa).Error; err != nil {
+	if err := db.WithContext(ctx).First(new(model.Mahasiswa), "id", idMahasiswa).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
 			return util.FailedResponse(c, http.StatusNotFound, map[string]string{"message": "mahasiswa tidak ditemukan"})
 		}
@@ -166,11 +157,10 @@ func InsertPrestasiHandler(c echo.Context) error {
 	}
 
 	if err := db.WithContext(ctx).Create(req.MapRequest(
-		idMahasiswa, mahasiswa.IdProdi,
-		mahasiswa.IdFakultas, util.CreateFileUrl(dSertifikat.Id))).Error; err != nil {
+		idMahasiswa, util.CreateFileUrl(dSertifikat.Id))).Error; err != nil {
 		storage.DeleteFile(dSertifikat.Id)
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return checkPrestasiError(c, err.Error())
 	}
 
 	return util.SuccessResponse(c, http.StatusCreated, nil)
@@ -198,28 +188,9 @@ func EditPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusUnauthorized, nil)
 	}
 
-	omit := []string{"id_prodi", "id_mahasiswa", "id_fakultas"}
-	idSertifikat := ""
-	sertifikat, _ := c.FormFile("sertifikat")
-	if sertifikat != nil {
-		if err := util.CheckFileIsPDF(sertifikat); err != nil {
-			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
-		}
-
-		dSertifikat, err := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
-		if err != nil {
-			return util.FailedResponse(c, http.StatusInternalServerError, nil)
-		}
-
-		idSertifikat = dSertifikat.Id
-	} else {
-		omit = append(omit, "sertifikat")
-	}
-
-	if err := db.WithContext(ctx).Omit(omit...).Where("id", id).
-		Updates(req.MapRequest(0, 0, 0, util.CreateFileUrl(idSertifikat))).Error; err != nil {
-		storage.DeleteFile(idSertifikat)
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+	if err := db.WithContext(ctx).Omit("id_mahasiswa", "sertifikat").
+		Where("id", id).Updates(req.MapRequest(0, "")).Error; err != nil {
+		return checkPrestasiError(c, err.Error())
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -301,4 +272,20 @@ func prestasiAuthorization(c echo.Context, id int, db *gorm.DB, ctx context.Cont
 	}
 
 	return result == idMahasiswa
+}
+
+func checkPrestasiError(c echo.Context, err string) error {
+	message := ""
+	if strings.Contains(err, "dosen") {
+		message = "dosen pembimbing"
+	} else if strings.Contains(err, "semester") {
+		message = "semester"
+	}
+
+	if message != "" {
+		message += " tidak ditemukan"
+		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": message})
+	}
+
+	return util.FailedResponse(c, http.StatusInternalServerError, nil)
 }

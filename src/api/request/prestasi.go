@@ -11,11 +11,9 @@ type Prestasi struct {
 	Peringkat         string `form:"peringkat" validate:"required"`
 }
 
-func (r *Prestasi) MapRequest(idMahasiswa, idFakultas, idProdi int, sertifikat string) *model.Prestasi {
+func (r *Prestasi) MapRequest(idMahasiswa int, sertifikat string) *model.Prestasi {
 	return &model.Prestasi{
 		IdMahasiswa:       idMahasiswa,
-		IdFakultas:        idFakultas,
-		IdProdi:           idProdi,
 		IdSemester:        r.IdSemester,
 		IdDosenPembimbing: r.IdDosenPembimbing,
 		Nama:              r.Nama,
