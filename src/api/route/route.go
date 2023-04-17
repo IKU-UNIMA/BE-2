@@ -97,5 +97,14 @@ func InitServer() *echo.Echo {
 	kategoriProgramKM.PUT("/:id", handler.EditKategoriProgramKMHandler, customMiddleware.GrantAdminIKU2)
 	kategoriProgramKM.DELETE("/:id", handler.DeleteKategoriProgramKMHandler, customMiddleware.GrantAdminIKU2)
 
+	kampusMerdeka := v1.Group("/kampus-merdeka", customMiddleware.Authentication)
+	kampusMerdeka.GET("", handler.GetAllKMHandler)
+	kampusMerdeka.GET("/:id", handler.GetKMByIdHandler)
+	kampusMerdeka.POST("", handler.InsertKMHandler, customMiddleware.GrantMahasiswa)
+	kampusMerdeka.PUT("/:id", handler.EditKMHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
+	kampusMerdeka.DELETE("/:id", handler.DeleteKMHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
+	kampusMerdeka.PATCH("/:id/surat-tugas", handler.EditSuratTugasHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
+	kampusMerdeka.PATCH("/:id/berita-acara", handler.EditBeritaAcaraHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
+
 	return app
 }
