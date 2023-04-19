@@ -21,6 +21,7 @@ type KampusMerdeka struct {
 	TotalSks                int
 	BiayaKuliah             float32
 	BeritaAcara             string
+	CreatedAt               time.Time
 	Mahasiswa               Mahasiswa         `gorm:"foreignKey:IdMahasiswa"`
 	Semester                Semester          `gorm:"foreignKey:IdSemester"`
 	DosenPembimbing         Dosen             `gorm:"foreignKey:IdDosenPembimbing"`
