@@ -268,7 +268,8 @@ func EditSuratTugasHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := db.WithContext(ctx).Where("id", id).Update("surat_tugas", util.CreateFileUrl(dSuratTugas.Id)).Error; err != nil {
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Where("id", id).
+		Update("surat_tugas", util.CreateFileUrl(dSuratTugas.Id)).Error; err != nil {
 		storage.DeleteFile(dSuratTugas.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
