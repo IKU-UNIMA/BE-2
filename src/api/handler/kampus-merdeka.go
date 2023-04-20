@@ -304,7 +304,8 @@ func EditBeritaAcaraHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := db.WithContext(ctx).Where("id", id).Update("berita_acara", util.CreateFileUrl(dBeritaAcara.Id)).Error; err != nil {
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Where("id", id).
+		Update("berita_acara", util.CreateFileUrl(dBeritaAcara.Id)).Error; err != nil {
 		storage.DeleteFile(dBeritaAcara.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
