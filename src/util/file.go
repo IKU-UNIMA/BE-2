@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strings"
 )
 
 func CheckFileType(file *multipart.FileHeader) error {
@@ -37,4 +38,9 @@ func CheckFileIsPDF(file *multipart.FileHeader) error {
 
 func CreateFileUrl(fileId string) string {
 	return "https://drive.google.com/file/d/" + fileId + "/view"
+}
+
+func GetFileIdFromUrl(url string) string {
+	arr := strings.Split(url, "/")
+	return arr[len(arr)-2]
 }

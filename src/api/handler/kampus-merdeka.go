@@ -110,8 +110,8 @@ func GetKMByIdHandler(c echo.Context) error {
 
 	role := util.GetClaimsFromContext(c)["role"].(string)
 	if role == string(util.MAHASISWA) {
-		if !kmAuthorization(c, id, db, ctx) {
-			return util.FailedResponse(http.StatusUnauthorized, nil)
+		if err := kmAuthorization(c, id, db, ctx); err != nil {
+			return err
 		}
 	}
 
@@ -199,8 +199,8 @@ func EditKMHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !kmAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if err := kmAuthorization(c, id, db, ctx); err != nil {
+		return err
 	}
 
 	data, errMapping := req.MapRequest(0, "")
@@ -225,8 +225,18 @@ func DeleteKMHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !kmAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if err := kmAuthorization(c, id, db, ctx); err != nil {
+		return err
+	}
+
+	fileUrl := &struct {
+		SuratTugas  string
+		BeritaAcara string
+	}{}
+
+	if err := db.WithContext(ctx).Model(new(model.KampusMerdeka)).Select("surat_tugas", "berita_acara").
+		Find(fileUrl, "id", id).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	query := db.WithContext(ctx).Delete(new(model.KampusMerdeka), "id", id)
@@ -236,6 +246,14 @@ func DeleteKMHandler(c echo.Context) error {
 
 	if query.Error == nil && query.RowsAffected < 1 {
 		return util.FailedResponse(http.StatusNotFound, nil)
+	}
+
+	suratTugasId := util.GetFileIdFromUrl(fileUrl.SuratTugas)
+	storage.DeleteFile(suratTugasId)
+
+	if fileUrl.BeritaAcara != "" {
+		beritaAcaraId := util.GetFileIdFromUrl(fileUrl.BeritaAcara)
+		storage.DeleteFile(beritaAcaraId)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -250,8 +268,8 @@ func EditSuratTugasHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !kmAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if err := kmAuthorization(c, id, db, ctx); err != nil {
+		return err
 	}
 
 	suratTugas, _ := c.FormFile("surat_tugas")
@@ -268,10 +286,22 @@ func EditSuratTugasHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := db.WithContext(ctx).Where("id", id).Update("surat_tugas", util.CreateFileUrl(dSuratTugas.Id)).Error; err != nil {
+	suratTugasUrl := ""
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Select("surat_tugas").
+		Where("id", id).Scan(&suratTugasUrl).Error; err != nil {
 		storage.DeleteFile(dSuratTugas.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
+
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Where("id", id).
+		Update("surat_tugas", util.CreateFileUrl(dSuratTugas.Id)).Error; err != nil {
+		storage.DeleteFile(dSuratTugas.Id)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	// delete old surat tugas
+	suratTugasId := util.GetFileIdFromUrl(suratTugasUrl)
+	storage.DeleteFile(suratTugasId)
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
@@ -285,8 +315,8 @@ func EditBeritaAcaraHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !kmAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if err := kmAuthorization(c, id, db, ctx); err != nil {
+		return err
 	}
 
 	beritaAcara, _ := c.FormFile("berita_acara")
@@ -303,30 +333,52 @@ func EditBeritaAcaraHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := db.WithContext(ctx).Where("id", id).Update("berita_acara", util.CreateFileUrl(dBeritaAcara.Id)).Error; err != nil {
+	beritaAcaraUrl := ""
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Select("berita_acara").
+		Where("id", id).Scan(&beritaAcaraUrl).Error; err != nil {
 		storage.DeleteFile(dBeritaAcara.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Where("id", id).
+		Update("berita_acara", util.CreateFileUrl(dBeritaAcara.Id)).Error; err != nil {
+		storage.DeleteFile(dBeritaAcara.Id)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	if beritaAcaraUrl != "" {
+		beritaAcaraId := util.GetFileIdFromUrl(beritaAcaraUrl)
+		storage.DeleteFile(beritaAcaraId)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
 
-func kmAuthorization(c echo.Context, id int, db *gorm.DB, ctx context.Context) bool {
+func kmAuthorization(c echo.Context, id int, db *gorm.DB, ctx context.Context) error {
 	claims := util.GetClaimsFromContext(c)
 	idMahasiswa := int(claims["id"].(float64))
 	role := claims["role"].(string)
 
 	if role == string(util.ADMIN) || role == string(util.OPERATOR) {
-		return true
+		return nil
 	}
 
 	result := 0
-	if err := db.WithContext(ctx).Table("kampus_merdeka").Select("id_mahasiswa").
-		Where("id", id).Scan(&result).Error; err != nil {
-		return false
+	query := db.WithContext(ctx).Table("kampus_merdeka").Select("id_mahasiswa").
+		Where("id", id).Scan(&result)
+	if query.Error != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	return result == idMahasiswa
+	if query.RowsAffected < 1 {
+		return util.FailedResponse(http.StatusNotFound, map[string]string{"message": "aktivitas tidak ditemukan"})
+	}
+
+	if result == idMahasiswa {
+		return nil
+	}
+
+	return util.FailedResponse(http.StatusUnauthorized, nil)
 }
 
 func checkKMError(c echo.Context, err string) error {
