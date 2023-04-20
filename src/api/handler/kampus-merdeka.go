@@ -229,6 +229,16 @@ func DeleteKMHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusUnauthorized, nil)
 	}
 
+	fileUrl := &struct {
+		SuratTugas  string
+		BeritaAcara string
+	}{}
+
+	if err := db.WithContext(ctx).Model(new(model.KampusMerdeka)).Select("surat_tugas", "berita_acara").
+		Find(fileUrl, "id", id).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
 	query := db.WithContext(ctx).Delete(new(model.KampusMerdeka), "id", id)
 	if query.Error != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
@@ -236,6 +246,14 @@ func DeleteKMHandler(c echo.Context) error {
 
 	if query.Error == nil && query.RowsAffected < 1 {
 		return util.FailedResponse(http.StatusNotFound, nil)
+	}
+
+	suratTugasId := util.GetFileIdFromUrl(fileUrl.SuratTugas)
+	storage.DeleteFile(suratTugasId)
+
+	if fileUrl.BeritaAcara != "" {
+		beritaAcaraId := util.GetFileIdFromUrl(fileUrl.BeritaAcara)
+		storage.DeleteFile(beritaAcaraId)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
