@@ -209,6 +209,12 @@ func DeletePrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(c, http.StatusUnauthorized, nil)
 	}
 
+	sertifikat := ""
+	if err := db.WithContext(ctx).Table("prestasi").Select("sertifikat").
+		Where("id", id).Scan(&sertifikat).Error; err != nil {
+		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+	}
+
 	query := db.WithContext(ctx).Delete(new(model.Prestasi), "id", id)
 	if query.Error != nil {
 		return util.FailedResponse(c, http.StatusInternalServerError, nil)
@@ -217,6 +223,10 @@ func DeletePrestasiHandler(c echo.Context) error {
 	if query.Error == nil && query.RowsAffected < 1 {
 		return util.FailedResponse(c, http.StatusNotFound, nil)
 	}
+
+	sertifikatArr := strings.Split(sertifikat, "/")
+	sertifikatId := sertifikatArr[len(sertifikatArr)-2]
+	storage.DeleteFile(sertifikatId)
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
