@@ -100,8 +100,8 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 
 	role := util.GetClaimsFromContext(c)["role"].(string)
 	if role == string(util.MAHASISWA) {
-		if !prestasiAuthorization(c, id, db, ctx) {
-			return util.FailedResponse(http.StatusUnauthorized, nil)
+		if err := prestasiAuthorization(c, id, db, ctx); err != nil {
+			return err
 		}
 	}
 
@@ -184,8 +184,8 @@ func EditPrestasiHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !prestasiAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if errAuth := prestasiAuthorization(c, id, db, ctx); errAuth != nil {
+		return errAuth
 	}
 
 	if err := db.WithContext(ctx).Omit("id_mahasiswa", "sertifikat").
@@ -205,8 +205,8 @@ func DeletePrestasiHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !prestasiAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if errAuth := prestasiAuthorization(c, id, db, ctx); errAuth != nil {
+		return errAuth
 	}
 
 	sertifikat := ""
@@ -240,8 +240,8 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
-	if !prestasiAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(http.StatusUnauthorized, nil)
+	if errAuth := prestasiAuthorization(c, id, db, ctx); errAuth != nil {
+		return errAuth
 	}
 
 	sertifikat, _ := c.FormFile("sertifikat")
@@ -258,7 +258,8 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := db.WithContext(ctx).Where("id", id).Update("sertifikat", util.CreateFileUrl(dSertifikat.Id)).Error; err != nil {
+	if err := db.WithContext(ctx).Table("prestasi").Where("id", id).
+		Update("sertifikat", util.CreateFileUrl(dSertifikat.Id)).Error; err != nil {
 		storage.DeleteFile(dSertifikat.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
@@ -266,22 +267,31 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
 
-func prestasiAuthorization(c echo.Context, id int, db *gorm.DB, ctx context.Context) bool {
+func prestasiAuthorization(c echo.Context, id int, db *gorm.DB, ctx context.Context) error {
 	claims := util.GetClaimsFromContext(c)
 	idMahasiswa := int(claims["id"].(float64))
 	role := claims["role"].(string)
 
 	if role == string(util.ADMIN) || role == string(util.OPERATOR) {
-		return true
+		return nil
 	}
 
 	result := 0
-	if err := db.WithContext(ctx).Table("prestasi").Select("id_mahasiswa").
-		Where("id", id).Scan(&result).Error; err != nil {
-		return false
+	query := db.WithContext(ctx).Table("prestasi").Select("id_mahasiswa").
+		Where("id", id).Scan(&result)
+	if query.Error != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	return result == idMahasiswa
+	if query.RowsAffected < 1 {
+		return util.FailedResponse(http.StatusNotFound, map[string]string{"message": "prestasi tidak ditemukan"})
+	}
+
+	if result == idMahasiswa {
+		return nil
+	}
+
+	return util.FailedResponse(http.StatusUnauthorized, nil)
 }
 
 func checkPrestasiError(c echo.Context, err string) error {
