@@ -27,7 +27,7 @@ type prestasiQueryParam struct {
 func GetAllPrestasiHandler(c echo.Context) error {
 	queryParams := &prestasiQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -44,7 +44,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 
 	if role == string(util.MAHASISWA) {
 		if err := db.WithContext(ctx).Table("mahasiswa").Select("nim").Where("id", id).Scan(&nim).Error; err != nil {
-			return util.FailedResponse(c, http.StatusInternalServerError, nil)
+			return util.FailedResponse(http.StatusInternalServerError, nil)
 		}
 
 		condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
@@ -79,7 +79,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 		Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Find(&result).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, util.Pagination{
@@ -91,7 +91,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 func GetPrestasiByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -101,7 +101,7 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 	role := util.GetClaimsFromContext(c)["role"].(string)
 	if role == string(util.MAHASISWA) {
 		if !prestasiAuthorization(c, id, db, ctx) {
-			return util.FailedResponse(c, http.StatusUnauthorized, nil)
+			return util.FailedResponse(http.StatusUnauthorized, nil)
 		}
 	}
 
@@ -110,10 +110,10 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 		Preload("DosenPembimbing.Fakultas").Preload("DosenPembimbing.Prodi").
 		Table("prestasi").First(result, id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, result)
@@ -122,7 +122,7 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 func InsertPrestasiHandler(c echo.Context) error {
 	req := &request.Prestasi{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(req); err != nil {
@@ -136,24 +136,24 @@ func InsertPrestasiHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(new(model.Mahasiswa), "id", idMahasiswa).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, map[string]string{"message": "mahasiswa tidak ditemukan"})
+			return util.FailedResponse(http.StatusNotFound, map[string]string{"message": "mahasiswa tidak ditemukan"})
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	sertifikat, _ := c.FormFile("sertifikat")
 	if sertifikat == nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "sertifikat tidak boleh kosong"})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "sertifikat tidak boleh kosong"})
 	}
 
 	if err := util.CheckFileIsPDF(sertifikat); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	dSertifikat, err := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
 	if err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if err := db.WithContext(ctx).Create(req.MapRequest(
@@ -169,12 +169,12 @@ func InsertPrestasiHandler(c echo.Context) error {
 func EditPrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	req := &request.Prestasi{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(req); err != nil {
@@ -185,7 +185,7 @@ func EditPrestasiHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	if !prestasiAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(c, http.StatusUnauthorized, nil)
+		return util.FailedResponse(http.StatusUnauthorized, nil)
 	}
 
 	if err := db.WithContext(ctx).Omit("id_mahasiswa", "sertifikat").
@@ -199,24 +199,34 @@ func EditPrestasiHandler(c echo.Context) error {
 func DeletePrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if !prestasiAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(c, http.StatusUnauthorized, nil)
+		return util.FailedResponse(http.StatusUnauthorized, nil)
+	}
+
+	sertifikat := ""
+	if err := db.WithContext(ctx).Table("prestasi").Select("sertifikat").
+		Where("id", id).Scan(&sertifikat).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	query := db.WithContext(ctx).Delete(new(model.Prestasi), "id", id)
 	if query.Error != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if query.Error == nil && query.RowsAffected < 1 {
-		return util.FailedResponse(c, http.StatusNotFound, nil)
+		return util.FailedResponse(http.StatusNotFound, nil)
 	}
+
+	sertifikatArr := strings.Split(sertifikat, "/")
+	sertifikatId := sertifikatArr[len(sertifikatArr)-2]
+	storage.DeleteFile(sertifikatId)
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
@@ -224,33 +234,33 @@ func DeletePrestasiHandler(c echo.Context) error {
 func EditSertifikatPrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if !prestasiAuthorization(c, id, db, ctx) {
-		return util.FailedResponse(c, http.StatusUnauthorized, nil)
+		return util.FailedResponse(http.StatusUnauthorized, nil)
 	}
 
 	sertifikat, _ := c.FormFile("sertifikat")
 	if sertifikat == nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "sertifikat tidak boleh kosong"})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "sertifikat tidak boleh kosong"})
 	}
 
 	if err := util.CheckFileIsPDF(sertifikat); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	dSertifikat, errDrive := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
 	if errDrive != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if err := db.WithContext(ctx).Where("id", id).Update("sertifikat", util.CreateFileUrl(dSertifikat.Id)).Error; err != nil {
 		storage.DeleteFile(dSertifikat.Id)
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -284,8 +294,8 @@ func checkPrestasiError(c echo.Context, err string) error {
 
 	if message != "" {
 		message += " tidak ditemukan"
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": message})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": message})
 	}
 
-	return util.FailedResponse(c, http.StatusInternalServerError, nil)
+	return util.FailedResponse(http.StatusInternalServerError, nil)
 }

@@ -25,7 +25,7 @@ type mahasiswaQueryParam struct {
 func GetAllMahasiswaHandler(c echo.Context) error {
 	queryParams := &mahasiswaQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	db := database.InitMySQL()
@@ -56,7 +56,7 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 	if err := db.WithContext(ctx).Preload("Prodi.Fakultas").Raw(getMahasiswaQuery).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
 		Where(condition).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, util.Pagination{Page: queryParams.Page, Data: data})
@@ -65,7 +65,7 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 func GetMahasiswaByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -75,10 +75,10 @@ func GetMahasiswaByIdHandler(c echo.Context) error {
 	condition := getMahasiswaQuery + fmt.Sprintf(" AND mahasiswa.id = %d", id)
 	if err := db.WithContext(ctx).Preload("Prodi.Fakultas").Raw(condition).First(data).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -87,7 +87,7 @@ func GetMahasiswaByIdHandler(c echo.Context) error {
 func InsertMahasiswaHandler(c echo.Context) error {
 	request := &request.Mahasiswa{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(request); err != nil {
@@ -106,10 +106,10 @@ func InsertMahasiswaHandler(c echo.Context) error {
 	if err := tx.WithContext(ctx).Create(akun).Error; err != nil {
 		tx.Rollback()
 		if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "email sudah digunakan"})
+			return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "email sudah digunakan"})
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	mahasiswa := request.MapRequest()
@@ -118,14 +118,14 @@ func InsertMahasiswaHandler(c echo.Context) error {
 	if err := tx.WithContext(ctx).Create(mahasiswa).Error; err != nil {
 		tx.Rollback()
 		if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "NIM sudah digunakan"})
+			return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "NIM sudah digunakan"})
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	return util.SuccessResponse(c, http.StatusCreated, map[string]string{"password": password})
@@ -134,12 +134,12 @@ func InsertMahasiswaHandler(c echo.Context) error {
 func EditMahasiswaHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	request := &request.Mahasiswa{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(request); err != nil {
@@ -152,19 +152,19 @@ func EditMahasiswaHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(new(model.Mahasiswa), id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if err := tx.WithContext(ctx).Table("akun").Where("id", id).Update("email", request.Email).Error; err != nil {
 		tx.Rollback()
 		if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "email sudah digunakan"})
+			return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "email sudah digunakan"})
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	result := request.MapRequest()
@@ -172,15 +172,15 @@ func EditMahasiswaHandler(c echo.Context) error {
 		if err != nil {
 			tx.Rollback()
 			if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-				return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "NIP sudah digunakan"})
+				return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "NIP sudah digunakan"})
 			}
 
-			return util.FailedResponse(c, http.StatusInternalServerError, nil)
+			return util.FailedResponse(http.StatusInternalServerError, nil)
 		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -189,7 +189,7 @@ func EditMahasiswaHandler(c echo.Context) error {
 func DeleteMahasiswaHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -197,11 +197,11 @@ func DeleteMahasiswaHandler(c echo.Context) error {
 
 	query := db.WithContext(ctx).Delete(new(model.Akun), id)
 	if query.Error != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if query.Error == nil && query.RowsAffected < 1 {
-		return util.FailedResponse(c, http.StatusNotFound, nil)
+		return util.FailedResponse(http.StatusNotFound, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
