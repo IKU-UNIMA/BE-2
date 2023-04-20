@@ -19,10 +19,10 @@ func GetAllFakultasHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Find(&result).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, result)
@@ -31,7 +31,7 @@ func GetAllFakultasHandler(c echo.Context) error {
 func GetFakultasByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -40,10 +40,10 @@ func GetFakultasByIdHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Table("fakultas").Preload("Prodi").First(result, id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, result)
@@ -52,7 +52,7 @@ func GetFakultasByIdHandler(c echo.Context) error {
 func InsertFakultasHandler(c echo.Context) error {
 	request := &request.Fakultas{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(request); err != nil {
@@ -64,10 +64,10 @@ func InsertFakultasHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Create(request.MapRequest()).Error; err != nil {
 		if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-			return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "fakultas sudah ada"})
+			return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fakultas sudah ada"})
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusCreated, nil)
@@ -76,12 +76,12 @@ func InsertFakultasHandler(c echo.Context) error {
 func EditFakultasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	request := &request.Fakultas{}
 	if err := c.Bind(request); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(request); err != nil {
@@ -93,19 +93,19 @@ func EditFakultasHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(new(model.Fakultas), id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if err := db.WithContext(ctx).Where("id", id).Updates(request.MapRequest()).Error; err != nil {
 		if err != nil {
 			if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
-				return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "fakultas sudah ada"})
+				return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fakultas sudah ada"})
 			}
 
-			return util.FailedResponse(c, http.StatusInternalServerError, nil)
+			return util.FailedResponse(http.StatusInternalServerError, nil)
 		}
 	}
 
@@ -115,7 +115,7 @@ func EditFakultasHandler(c echo.Context) error {
 func DeleteFakultasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -123,11 +123,11 @@ func DeleteFakultasHandler(c echo.Context) error {
 
 	query := db.WithContext(ctx).Delete(new(model.Fakultas), id)
 	if query.Error == nil && query.RowsAffected < 1 {
-		return util.FailedResponse(c, http.StatusNotFound, nil)
+		return util.FailedResponse(http.StatusNotFound, nil)
 	}
 
 	if query.Error != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)

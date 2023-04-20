@@ -17,7 +17,7 @@ func GetAllSemesterHandler(c echo.Context) error {
 	data := []response.Semester{}
 
 	if err := db.WithContext(ctx).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -26,7 +26,7 @@ func GetAllSemesterHandler(c echo.Context) error {
 func InsertSemesterHandler(c echo.Context) error {
 	req := &request.Semester{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(req); err != nil {
@@ -37,7 +37,7 @@ func InsertSemesterHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	if err := db.WithContext(ctx).Create(req.MapRequest()).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -46,12 +46,12 @@ func InsertSemesterHandler(c echo.Context) error {
 func EditSemesterHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	req := &request.Semester{}
 	if err := c.Bind(req); err != nil {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
 	if err := c.Validate(req); err != nil {
@@ -63,14 +63,14 @@ func EditSemesterHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).First(new(model.Semester), id).Error; err != nil {
 		if err.Error() == util.NOT_FOUND_ERROR {
-			return util.FailedResponse(c, http.StatusNotFound, nil)
+			return util.FailedResponse(http.StatusNotFound, nil)
 		}
 
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	if err := db.WithContext(ctx).Where("id", id).Updates(req.MapRequest()).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
@@ -79,7 +79,7 @@ func EditSemesterHandler(c echo.Context) error {
 func DeleteSemesterHandler(c echo.Context) error {
 	id, err := util.GetId(c)
 	if err != "" {
-		return util.FailedResponse(c, http.StatusUnprocessableEntity, map[string]string{"message": err})
+		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
 	}
 
 	db := database.InitMySQL()
@@ -87,11 +87,11 @@ func DeleteSemesterHandler(c echo.Context) error {
 
 	query := db.WithContext(ctx).Delete(new(model.Fakultas), id)
 	if query.Error == nil && query.RowsAffected < 1 {
-		return util.FailedResponse(c, http.StatusNotFound, nil)
+		return util.FailedResponse(http.StatusNotFound, nil)
 	}
 
 	if query.Error != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)

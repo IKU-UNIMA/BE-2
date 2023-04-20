@@ -34,7 +34,7 @@ func GetKMDashboardByKategoriHandler(c echo.Context) error {
 	`, condition)
 
 	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -43,12 +43,12 @@ func GetKMDashboardByKategoriHandler(c echo.Context) error {
 func GetDetailDashboardHandler(c echo.Context) error {
 	fitur := checkDashboardFitur(c.Param("fitur"))
 	if fitur == "" {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": "fitur tidak didukung"})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fitur tidak didukung"})
 	}
 
 	queryParams := &detailDashboardQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-		return util.FailedResponse(c, http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	condition := ""
@@ -92,7 +92,7 @@ func GetDetailDashboardHandler(c echo.Context) error {
 	detailDashboard := response.DetailDashboard{}
 	rows, err := db.WithContext(ctx).Raw(query).Rows()
 	if err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 	defer rows.Close()
 
@@ -133,7 +133,7 @@ func GetKMDashboardByFakultasHandler(c echo.Context) error {
 	`, condition)
 
 	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -155,7 +155,7 @@ func GetPrestasiDashboardByTingkatHandler(c echo.Context) error {
 	`, condition)
 
 	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -180,7 +180,7 @@ func GetPrestasiDashboardByFakultasHandler(c echo.Context) error {
 	`, condition)
 
 	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -201,12 +201,12 @@ func GetTotalDashboardHandler(c echo.Context) error {
 
 	// find total kampus merdeka
 	if err := db.WithContext(ctx).Raw(kmQuery).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	// find total prestasi
 	if err := db.WithContext(ctx).Raw(prestasiQuery).Find(&data).Error; err != nil {
-		return util.FailedResponse(c, http.StatusInternalServerError, nil)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
