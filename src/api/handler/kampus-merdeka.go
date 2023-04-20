@@ -304,10 +304,22 @@ func EditBeritaAcaraHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
+	beritaAcaraUrl := ""
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Select("berita_acara").
+		Where("id", id).Scan(&beritaAcaraUrl).Error; err != nil {
+		storage.DeleteFile(dBeritaAcara.Id)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
 	if err := db.WithContext(ctx).Table("kampus_merdeka").Where("id", id).
 		Update("berita_acara", util.CreateFileUrl(dBeritaAcara.Id)).Error; err != nil {
 		storage.DeleteFile(dBeritaAcara.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	if beritaAcaraUrl != "" {
+		beritaAcaraId := util.GetFileIdFromUrl(beritaAcaraUrl)
+		storage.DeleteFile(beritaAcaraId)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
