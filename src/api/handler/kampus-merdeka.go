@@ -268,11 +268,22 @@ func EditSuratTugasHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
+	suratTugasUrl := ""
+	if err := db.WithContext(ctx).Table("kampus_merdeka").Select("surat_tugas").
+		Where("id", id).Scan(&suratTugasUrl).Error; err != nil {
+		storage.DeleteFile(dSuratTugas.Id)
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
 	if err := db.WithContext(ctx).Table("kampus_merdeka").Where("id", id).
 		Update("surat_tugas", util.CreateFileUrl(dSuratTugas.Id)).Error; err != nil {
 		storage.DeleteFile(dSuratTugas.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
+
+	// delete old surat tugas
+	suratTugasId := util.GetFileIdFromUrl(suratTugasUrl)
+	storage.DeleteFile(suratTugasId)
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
