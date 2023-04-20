@@ -258,7 +258,8 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := db.WithContext(ctx).Where("id", id).Update("sertifikat", util.CreateFileUrl(dSertifikat.Id)).Error; err != nil {
+	if err := db.WithContext(ctx).Table("prestasi").Where("id", id).
+		Update("sertifikat", util.CreateFileUrl(dSertifikat.Id)).Error; err != nil {
 		storage.DeleteFile(dSertifikat.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
