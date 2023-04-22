@@ -189,7 +189,7 @@ func GetPrestasiDashboardByFakultasHandler(c echo.Context) error {
 func GetTotalDashboardHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
-	data := []response.TotalDashboard{}
+	data := &response.TotalDashboard{}
 	tahun, _ := strconv.Atoi(c.Param("tahun"))
 	condition := ""
 	if tahun > 2000 {
@@ -200,12 +200,12 @@ func GetTotalDashboardHandler(c echo.Context) error {
 	prestasiQuery := fmt.Sprintf(`SELECT COUNT(id) AS total_prestasi FROM prestasi %s`, condition)
 
 	// find total kampus merdeka
-	if err := db.WithContext(ctx).Raw(kmQuery).Find(&data).Error; err != nil {
+	if err := db.WithContext(ctx).Raw(kmQuery).First(data).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	// find total prestasi
-	if err := db.WithContext(ctx).Raw(prestasiQuery).Find(&data).Error; err != nil {
+	if err := db.WithContext(ctx).Raw(prestasiQuery).First(data).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
