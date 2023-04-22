@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type detailDashboardQueryParam struct {
+type dashboardQueryParam struct {
 	Fakultas int `query:"prodi"`
 	Tahun    int `query:"tahun"`
 	Semester int `query:"semester"`
@@ -21,10 +21,14 @@ func GetKMDashboardByKategoriHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.Dashboard{}
-	tahun, _ := strconv.Atoi(c.Param("tahun"))
+
+	queryParams := &dashboardQueryParam{}
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
 	condition := ""
-	if tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", tahun)
+	if queryParams.Tahun > 2000 {
+		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
 	}
 
 	query := fmt.Sprintf(`
@@ -46,7 +50,7 @@ func GetDetailDashboardHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fitur tidak didukung"})
 	}
 
-	queryParams := &detailDashboardQueryParam{}
+	queryParams := &dashboardQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
@@ -118,10 +122,14 @@ func GetKMDashboardByFakultasHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.DetailDashboard{}
-	tahun, _ := strconv.Atoi(c.Param("tahun"))
+
+	queryParams := &dashboardQueryParam{}
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
 	condition := ""
-	if tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", tahun)
+	if queryParams.Tahun > 2000 {
+		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
 	}
 
 	query := fmt.Sprintf(`
@@ -143,10 +151,14 @@ func GetPrestasiDashboardByTingkatHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.Dashboard{}
-	tahun, _ := strconv.Atoi(c.Param("tahun"))
+
+	queryParams := &dashboardQueryParam{}
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
 	condition := ""
-	if tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", tahun)
+	if queryParams.Tahun > 2000 {
+		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
 	}
 
 	query := fmt.Sprintf(`
@@ -190,10 +202,14 @@ func GetTotalDashboardHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &response.TotalDashboard{}
-	tahun, _ := strconv.Atoi(c.Param("tahun"))
+
+	queryParams := &dashboardQueryParam{}
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
 	condition := ""
-	if tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", tahun)
+	if queryParams.Tahun > 2000 {
+		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
 	}
 
 	kmQuery := fmt.Sprintf(`SELECT COUNT(id) AS total_kampus_merdeka FROM kampus_merdeka %s`, condition)
