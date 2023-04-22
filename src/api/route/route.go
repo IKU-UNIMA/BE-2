@@ -106,13 +106,14 @@ func InitServer() *echo.Echo {
 	kampusMerdeka.PATCH("/:id/surat-tugas", handler.EditSuratTugasHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
 	kampusMerdeka.PATCH("/:id/berita-acara", handler.EditBeritaAcaraHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
 
-	dashboard := v1.Group("/dashboard")
-	dashboard.GET("/kampus-merdeka/kategori", handler.GetKMDashboardByKategoriHandler)
-	dashboard.GET("/kampus-merdeka/fakultas", handler.GetKMDashboardByFakultasHandler)
-	dashboard.GET("/:fitur/detail", handler.GetDetailDashboardHandler)
-	dashboard.GET("/prestasi/tingkat", handler.GetPrestasiDashboardByTingkatHandler)
-	dashboard.GET("/prestasi/fakultas", handler.GetPrestasiDashboardByFakultasHandler)
-	dashboard.GET("/total", handler.GetTotalDashboardHandler)
+	dashboard := v1.Group("/dashboard", customMiddleware.Authentication)
+	dashboard.GET("/kampus-merdeka/kategori", handler.GetKMDashboardByKategoriHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
+	dashboard.GET("/kampus-merdeka/fakultas", handler.GetKMDashboardByFakultasHandler, customMiddleware.GrantAdminIKU2AndRektor)
+	dashboard.GET("/:fitur/detail", handler.GetDetailDashboardHandler, customMiddleware.GrantAdminIKU2AndRektor)
+	dashboard.GET("/prestasi/tingkat", handler.GetPrestasiDashboardByTingkatHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
+	dashboard.GET("/prestasi/fakultas", handler.GetPrestasiDashboardByFakultasHandler, customMiddleware.GrantAdminIKU2AndRektor)
+	dashboard.GET("/total", handler.GetTotalDashboardHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
+	dashboard.GET("/umum", handler.GetDashboardUmumHandler, customMiddleware.GrantAdminUmum)
 
 	return app
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type dashboardQueryParam struct {
-	Fakultas int `query:"prodi"`
+	Fakultas int `query:"fakultas"`
 	Tahun    int `query:"tahun"`
 	Semester int `query:"semester"`
 }
@@ -222,6 +222,34 @@ func GetTotalDashboardHandler(c echo.Context) error {
 
 	// find total prestasi
 	if err := db.WithContext(ctx).Raw(prestasiQuery).First(data).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	return util.SuccessResponse(c, http.StatusOK, data)
+}
+
+func GetDashboardUmumHandler(c echo.Context) error {
+	db := database.InitMySQL()
+	ctx := c.Request().Context()
+	data := &response.DashboardUmum{}
+	fakultasQuery := `SELECT COUNT(id) AS fakultas FROM fakultas`
+	prodiQuery := `SELECT COUNT(id) AS fakultas FROM fakultas`
+	dosenQuery := `SELECT COUNT(id) AS fakultas FROM fakultas`
+	mahasiswaQuery := `SELECT COUNT(id) AS fakultas FROM fakultas`
+
+	if err := db.WithContext(ctx).Raw(fakultasQuery).Find(data).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	if err := db.WithContext(ctx).Raw(prodiQuery).Find(data).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	if err := db.WithContext(ctx).Raw(dosenQuery).Find(data).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	if err := db.WithContext(ctx).Raw(mahasiswaQuery).Find(data).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
