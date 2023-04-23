@@ -87,7 +87,7 @@ func GetAllKMHandler(c echo.Context) error {
 		Preload("Semester").Preload("KategoriProgram").
 		Joins("JOIN mahasiswa ON mahasiswa.id = kampus_merdeka.id_mahasiswa").
 		Where(condition).
-		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
+		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).Order("created_at DESC").
 		Find(&result).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
