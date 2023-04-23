@@ -77,7 +77,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").
 		Joins("JOIN mahasiswa ON mahasiswa.id = prestasi.id_mahasiswa").
 		Where(condition).
-		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).
+		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).Order("created_at DESC").
 		Find(&result).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
