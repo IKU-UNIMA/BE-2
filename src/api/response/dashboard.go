@@ -28,4 +28,11 @@ type (
 		TotalKM       int `json:"total_kampus_merdeka"`
 		TotalPrestasi int `json:"total_prestasi"`
 	}
+
+	DashboardUmum struct {
+		Fakultas  int `json:"fakultas"`
+		Prodi     int `json:"prodi"`
+		Dosen     int `json:"dosen"`
+		Mahasiswa int `json:"mahasiswa"`
+	}
 )

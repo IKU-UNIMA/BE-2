@@ -59,3 +59,38 @@ func GrantAdminIKU2OperatorAndMahasiswa(next echo.HandlerFunc) echo.HandlerFunc 
 		return next(c)
 	}
 }
+
+func GrantAdminIKU2OperatorAndRektor(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := util.GetClaimsFromContext(c)
+		role := claims["role"].(string)
+		bagian := claims["bagian"].(string)
+		if role != string(util.REKTOR) && role != string(util.ADMIN) &&
+			role != string(util.OPERATOR) {
+			return util.FailedResponse(http.StatusUnauthorized, nil)
+		}
+
+		if role == string(util.ADMIN) && bagian != util.IKU2 {
+			return util.FailedResponse(http.StatusUnauthorized, nil)
+		}
+
+		return next(c)
+	}
+}
+
+func GrantAdminIKU2AndRektor(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := util.GetClaimsFromContext(c)
+		role := claims["role"].(string)
+		bagian := claims["bagian"].(string)
+		if role != string(util.REKTOR) && role != string(util.ADMIN) {
+			return util.FailedResponse(http.StatusUnauthorized, nil)
+		}
+
+		if role == string(util.ADMIN) && bagian != util.IKU2 {
+			return util.FailedResponse(http.StatusUnauthorized, nil)
+		}
+
+		return next(c)
+	}
+}
