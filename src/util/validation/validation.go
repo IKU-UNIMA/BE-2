@@ -16,6 +16,10 @@ type CustomValidator struct {
 func (cv *CustomValidator) Validate(i interface{}) error {
 	cv.Validator.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "" {
+			name = strings.SplitN(fld.Tag.Get("form"), ",", 2)[0]
+		}
+
 		if name == "-" {
 			return ""
 		}
