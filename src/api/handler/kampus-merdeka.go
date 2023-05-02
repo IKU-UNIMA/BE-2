@@ -127,6 +127,8 @@ func GetKMByIdHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
+	result.TanggalSkTugas = strings.Split(result.TanggalSkTugas, "T")[0]
+
 	return util.SuccessResponse(c, http.StatusOK, result)
 }
 
