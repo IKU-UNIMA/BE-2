@@ -2,12 +2,13 @@ package response
 
 type (
 	Prestasi struct {
-		ID          int                `json:"id"`
-		IdMahasiswa int                `json:"-"`
-		IdSemester  int                `json:"-"`
-		Nama        string             `json:"nama"`
-		Mahasiswa   MahasiswaReference `gorm:"foreignKey:IdMahasiswa" json:"mahasiswa"`
-		Semester    Semester           `gorm:"foreignKey:IdSemester" json:"semester"`
+		ID              int                `json:"id"`
+		IdMahasiswa     int                `json:"-"`
+		IdSemester      int                `json:"-"`
+		Nama            string             `json:"nama"`
+		TingkatPrestasi string             `json:"tingkat_prestasi"`
+		Mahasiswa       MahasiswaReference `gorm:"foreignKey:IdMahasiswa" json:"mahasiswa"`
+		Semester        Semester           `gorm:"foreignKey:IdSemester" json:"semester"`
 	}
 
 	DetailPrestasi struct {
