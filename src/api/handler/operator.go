@@ -46,7 +46,18 @@ func GetAllOperatorHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	return util.SuccessResponse(c, http.StatusOK, util.Pagination{Page: queryParams.Page, Data: result})
+	var totalResult int64
+	if err := db.WithContext(ctx).Table("operator").Count(&totalResult).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	return util.SuccessResponse(c, http.StatusOK, util.Pagination{
+		Limit:       limit,
+		Page:        queryParams.Page,
+		TotalPage:   util.CountTotalPage(int(totalResult), limit),
+		TotalResult: int(totalResult),
+		Data:        result,
+	})
 }
 
 func GetOperatorByIdHandler(c echo.Context) error {
