@@ -225,12 +225,13 @@ func GetPrestasiDashboardByFakultasHandler(c echo.Context) error {
 func GetTotalDashboardHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
-	data := &response.TotalDashboard{}
+	data := []response.TotalDashboard{}
 
 	queryParams := &dashboardQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
+
 	condition := ""
 	if queryParams.Tahun > 2000 {
 		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
@@ -246,21 +247,31 @@ func GetTotalDashboardHandler(c echo.Context) error {
 		} else {
 			condition = fmt.Sprintf("mahasiswa.id_prodi = %d", queryParams.Prodi)
 		}
-
 	}
 
 	kmQuery := fmt.Sprintf(`SELECT COUNT(id) AS total_kampus_merdeka FROM kampus_merdeka %s %s`, prodiKM, condition)
 	prestasiQuery := fmt.Sprintf(`SELECT COUNT(id) AS total_prestasi FROM prestasi %s %s`, prodiPrestasi, condition)
 
 	// find total kampus merdeka
-	if err := db.WithContext(ctx).Raw(kmQuery).First(data).Error; err != nil {
+	total := 0
+	if err := db.WithContext(ctx).Raw(kmQuery).Find(&total).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
+	data = append(data, response.TotalDashboard{
+		Nama:  "kampus_merdeka",
+		Total: total,
+	})
+
 	// find total prestasi
-	if err := db.WithContext(ctx).Raw(prestasiQuery).First(data).Error; err != nil {
+	if err := db.WithContext(ctx).Raw(prestasiQuery).Find(&total).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
+
+	data = append(data, response.TotalDashboard{
+		Nama:  "prestasi",
+		Total: total,
+	})
 
 	return util.SuccessResponse(c, http.StatusOK, data)
 }

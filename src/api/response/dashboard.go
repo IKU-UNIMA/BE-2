@@ -25,8 +25,8 @@ type (
 	}
 
 	TotalDashboard struct {
-		TotalKM       int `json:"total_kampus_merdeka"`
-		TotalPrestasi int `json:"total_prestasi"`
+		Nama  string `json:"nama"`
+		Total int    `json:"total"`
 	}
 
 	DashboardUmum struct {
