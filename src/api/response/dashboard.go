@@ -21,7 +21,7 @@ type (
 		Semester struct {
 			Id   int    `json:"id"`
 			Nama string `json:"nama"`
-		}
+		} `json:"semester"`
 		Jumlah int `json:"jumlah"`
 	}
 
