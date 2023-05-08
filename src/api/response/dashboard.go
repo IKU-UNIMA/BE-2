@@ -2,6 +2,7 @@ package response
 
 type (
 	Dashboard struct {
+		ID     int    `json:"-"`
 		Nama   string `json:"nama"`
 		Jumlah int    `json:"jumlah"`
 	}
@@ -22,6 +23,11 @@ type (
 			Nama string `json:"nama"`
 		}
 		Jumlah int `json:"jumlah"`
+	}
+
+	KategoriDashboard struct {
+		Nama   string `json:"nama"`
+		Jumlah int    `json:"jumlah"`
 	}
 
 	TotalDashboard struct {
