@@ -238,7 +238,7 @@ func GetTotalDashboardHandler(c echo.Context) error {
 	}
 
 	data = append(data, response.TotalDashboard{
-		Nama:  "kampus_merdeka",
+		Nama:  "Kampus Merdeka",
 		Total: total,
 	})
 
@@ -248,7 +248,7 @@ func GetTotalDashboardHandler(c echo.Context) error {
 	}
 
 	data = append(data, response.TotalDashboard{
-		Nama:  "prestasi",
+		Nama:  "Prestasi",
 		Total: total,
 	})
 
