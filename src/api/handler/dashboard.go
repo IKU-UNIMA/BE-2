@@ -6,7 +6,6 @@ import (
 	"be-2/src/util"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,10 +17,44 @@ type dashboardQueryParam struct {
 	Semester int `query:"semester"`
 }
 
-func GetKMDashboardByKategoriHandler(c echo.Context) error {
+func GetDashboardHandler(c echo.Context) error {
+	fitur := checkDashboardFitur(c.Param("fitur"))
+	if fitur == "" {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fitur tidak didukung"})
+	}
+
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.Dashboard{}
+
+	queryParams := &dashboardQueryParam{}
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
+	condition := ""
+	if queryParams.Tahun > 2000 {
+		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
+	}
+
+	query := fmt.Sprintf(`
+	SELECT fakultas.id, fakultas.nama, COUNT(*) AS jumlah FROM %s
+	JOIN mahasiswa on mahasiswa.id = %s.id_mahasiswa
+	JOIN prodi on prodi.id = mahasiswa.id_prodi
+	JOIN fakultas on fakultas.id = prodi.id_fakultas
+	%s GROUP BY fakultas.id;
+	`, fitur, fitur, condition)
+
+	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	return util.SuccessResponse(c, http.StatusOK, data)
+}
+
+func GetKMDashboardByKategoriHandler(c echo.Context) error {
+	db := database.InitMySQL()
+	ctx := c.Request().Context()
+	data := []response.KategoriDashboard{}
 
 	queryParams := &dashboardQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
@@ -131,39 +164,10 @@ func GetDetailDashboardHandler(c echo.Context) error {
 	return util.SuccessResponse(c, http.StatusOK, data)
 }
 
-func GetKMDashboardByFakultasHandler(c echo.Context) error {
-	db := database.InitMySQL()
-	ctx := c.Request().Context()
-	data := []response.DetailDashboard{}
-
-	queryParams := &dashboardQueryParam{}
-	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
-	}
-	condition := ""
-	if queryParams.Tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
-	}
-
-	query := fmt.Sprintf(`
-	SELECT fakultas.nama, COUNT(kampus_merdeka.id) AS jumlah FROM kampus_merdeka
-	JOIN mahasiswa on mahasiswa.id = kampus_merdeka.id_mahasiswa
-	JOIN prodi on prodi.id = mahasiswa.id_prodi
-	JOIN fakultas on fakultas.id = prodi.id_fakultas
-	%s GROUP BY fakultas.id;
-	`, condition)
-
-	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
-		return util.FailedResponse(http.StatusInternalServerError, nil)
-	}
-
-	return util.SuccessResponse(c, http.StatusOK, data)
-}
-
 func GetPrestasiDashboardByTingkatHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
-	data := []response.Dashboard{}
+	data := []response.KategoriDashboard{}
 
 	queryParams := &dashboardQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
@@ -189,31 +193,6 @@ func GetPrestasiDashboardByTingkatHandler(c echo.Context) error {
 	SELECT tingkat_prestasi as nama, COUNT(id) AS jumlah FROM prestasi
 	%s %s GROUP BY tingkat_prestasi;
 	`, prodiJoin, condition)
-
-	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
-		return util.FailedResponse(http.StatusInternalServerError, nil)
-	}
-
-	return util.SuccessResponse(c, http.StatusOK, data)
-}
-
-func GetPrestasiDashboardByFakultasHandler(c echo.Context) error {
-	db := database.InitMySQL()
-	ctx := c.Request().Context()
-	data := []response.Dashboard{}
-	tahun, _ := strconv.Atoi(c.Param("tahun"))
-	condition := ""
-	if tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", tahun)
-	}
-
-	query := fmt.Sprintf(`
-	SELECT fakultas.nama, COUNT(prestasi.id) AS jumlah FROM prestasi
-	JOIN mahasiswa on mahasiswa.id = prestasi.id_mahasiswa
-	JOIN prodi on prodi.id = mahasiswa.id_prodi
-	JOIN fakultas on fakultas.id = prodi.id_fakultas
-	%s GROUP BY fakultas.id;
-	`, condition)
 
 	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
