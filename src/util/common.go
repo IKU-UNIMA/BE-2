@@ -1,6 +1,7 @@
 package util
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/golang-jwt/jwt"
@@ -22,6 +23,10 @@ func IsInteger(value string) bool {
 	}
 	_, err := strconv.Atoi(value)
 	return err == nil
+}
+
+func RoundFloat(v float64) float64 {
+	return math.Round(v*100) / 100
 }
 
 func GetClaimsFromContext(c echo.Context) jwt.MapClaims {
