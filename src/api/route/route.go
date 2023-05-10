@@ -113,6 +113,7 @@ func InitServer() *echo.Echo {
 	dashboard.GET("/prestasi/tingkat", handler.GetPrestasiDashboardByTingkatHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
 	dashboard.GET("/total", handler.GetTotalDashboardHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
 	dashboard.GET("/umum", handler.GetDashboardUmumHandler, customMiddleware.GrantAdminUmum)
+	dashboard.PATCH("/target", handler.InsertTargetHandler, customMiddleware.GrantAdminIKU2)
 
 	return app
 }
