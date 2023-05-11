@@ -98,8 +98,8 @@ func GetAllPrestasiHandler(c echo.Context) error {
 
 func GetPrestasiByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -176,8 +176,8 @@ func InsertPrestasiHandler(c echo.Context) error {
 
 func EditPrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	req := &request.Prestasi{}
@@ -206,8 +206,8 @@ func EditPrestasiHandler(c echo.Context) error {
 
 func DeletePrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -241,8 +241,8 @@ func DeletePrestasiHandler(c echo.Context) error {
 
 func EditSertifikatPrestasiHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

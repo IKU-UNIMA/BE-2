@@ -75,8 +75,8 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 
 func GetMahasiswaByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -144,8 +144,8 @@ func InsertMahasiswaHandler(c echo.Context) error {
 
 func EditMahasiswaHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	request := &request.Mahasiswa{}
@@ -199,8 +199,8 @@ func EditMahasiswaHandler(c echo.Context) error {
 
 func DeleteMahasiswaHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

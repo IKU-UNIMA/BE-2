@@ -30,8 +30,8 @@ func GetAllFakultasHandler(c echo.Context) error {
 
 func GetFakultasByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -75,8 +75,8 @@ func InsertFakultasHandler(c echo.Context) error {
 
 func EditFakultasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	request := &request.Fakultas{}
@@ -114,8 +114,8 @@ func EditFakultasHandler(c echo.Context) error {
 
 func DeleteFakultasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

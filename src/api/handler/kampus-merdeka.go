@@ -108,8 +108,8 @@ func GetAllKMHandler(c echo.Context) error {
 
 func GetKMByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -193,8 +193,8 @@ func InsertKMHandler(c echo.Context) error {
 
 func EditKMHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	req := &request.KampusMerdeka{}
@@ -228,8 +228,8 @@ func EditKMHandler(c echo.Context) error {
 
 func DeleteKMHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -271,8 +271,8 @@ func DeleteKMHandler(c echo.Context) error {
 
 func EditSuratTugasHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -318,8 +318,8 @@ func EditSuratTugasHandler(c echo.Context) error {
 
 func EditBeritaAcaraHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

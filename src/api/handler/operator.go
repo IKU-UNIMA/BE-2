@@ -62,8 +62,8 @@ func GetAllOperatorHandler(c echo.Context) error {
 
 func GetOperatorByIdHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
@@ -131,8 +131,8 @@ func InsertOperatorHandler(c echo.Context) error {
 
 func EditOperatorHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	request := &request.Operator{}
@@ -186,8 +186,8 @@ func EditOperatorHandler(c echo.Context) error {
 
 func DeleteOperatorHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
