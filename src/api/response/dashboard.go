@@ -17,36 +17,18 @@ type (
 		Persentase      string `json:"persentase"`
 	}
 
-	// DashboardPerProdi struct {
-	// 	Total      int                       `json:"total"`
-	// 	TotalDosen int                       `json:"total_dosen"`
-	// 	Pencapaian string                    `json:"pencapaian"`
-	// 	Detail     []DashboardDetailPerProdi `json:"detail"`
-	// }
+	DashboardPerProdi struct {
+		Total          int                       `json:"total"`
+		TotalMahasiswa int                       `json:"total_mahasiswa"`
+		Pencapaian     string                    `json:"pencapaian"`
+		Detail         []DashboardDetailPerProdi `json:"detail"`
+	}
 
-	// DashboardDetailPerProdi struct {
-	// 	Prodi       string `json:"prodi"`
-	// 	JumlahDosen int    `json:"jumlah_dosen"`
-	// 	Jumlah      int    `json:"jumlah"`
-	// 	Persentase  string `json:"persentase"`
-	// }
-
-	DetailDashboard struct {
-		Prodi struct {
-			ID        int    `json:"id"`
-			KodeProdi string `json:"kode_prodi"`
-			Nama      string `json:"nama"`
-			Jenjang   string `json:"jenjang"`
-		} `json:"prodi"`
-		Fakultas struct {
-			ID   int    `json:"id"`
-			Nama string `json:"nama"`
-		} `json:"fakultas"`
-		Semester struct {
-			Id   int    `json:"id"`
-			Nama string `json:"nama"`
-		} `json:"semester"`
-		Jumlah int `json:"jumlah"`
+	DashboardDetailPerProdi struct {
+		Prodi           string `json:"prodi"`
+		JumlahMahasiswa int    `json:"jumlah_mahasiswa"`
+		Jumlah          int    `json:"jumlah"`
+		Persentase      string `json:"persentase"`
 	}
 
 	KategoriDashboard struct {

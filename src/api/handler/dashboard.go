@@ -114,66 +114,106 @@ func GetDashboardHandler(c echo.Context) error {
 	return util.SuccessResponse(c, http.StatusOK, data)
 }
 
-// func GetDashboardByFakultasHandler(c echo.Context) error {
-// 	queryParams := &dashboardQueryParam{}
-// 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-// 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
-// 	}
+func GetDashboardByFakultasHandler(c echo.Context) error {
+	queryParams := &dashboardQueryParam{}
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
 
-// 	fakultas, err := util.GetId(c)
-// 	if err != nil {
-// 		return err
-// 	}
+	fakultas, err := util.GetId(c)
+	if err != nil {
+		return err
+	}
 
-// 	db := database.InitMySQL()
-// 	ctx := c.Request().Context()
-// 	data := []response.DetailDashboard{}
+	db := database.InitMySQL()
+	ctx := c.Request().Context()
+	data := &response.DashboardPerProdi{}
+	data.Detail = []response.DashboardDetailPerProdi{}
 
-// 	fakultasConds := ""
-// 	if fakultas > 0 {
-// 		fakultasConds = fmt.Sprintf("WHERE prodi.id_fakultas = %d", fakultas)
-// 	}
+	fakultasConds := ""
+	if fakultas > 0 {
+		fakultasConds = fmt.Sprintf("WHERE prodi.id_fakultas = %d", fakultas)
+	}
 
-// 	mhs := []struct {
-// 		Jumlah    int
-// 		KodeProdi int
-// 		Prodi     string
-// 		Jenjang   string
-// 	}{}
+	mhs := []struct {
+		Jumlah    int
+		KodeProdi int
+		Prodi     string
+		Jenjang   string
+	}{}
 
-// 	mhsQuery := fmt.Sprintf(`
-// 	SELECT COUNT(mahasiswa.id) as jumlah, prodi.kode_prodi, prodi.nama as prodi, prodi.jenjang FROM prodi
-// 	left JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
-// 	%s GROUP BY prodi.id ORDER BY prodi.id
-// 	`, fakultasConds)
+	mhsQuery := fmt.Sprintf(`
+	SELECT COUNT(mahasiswa.id) as jumlah, prodi.kode_prodi, prodi.nama as prodi, prodi.jenjang FROM prodi
+	left JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
+	%s GROUP BY prodi.id ORDER BY prodi.id
+	`, fakultasConds)
 
-// 	if err := db.WithContext(ctx).Raw(mhsQuery).Find(&mhs).Error; err != nil {
-// 		return util.FailedResponse(http.StatusInternalServerError, nil)
-// 	}
+	if err := db.WithContext(ctx).Raw(mhsQuery).Find(&mhs).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
 
-// 	if len(mhs) != 0 {
-// 		condition := ""
-// 		if queryParams.Tahun > 2000 {
-// 			condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
-// 		}
+	var totalMahasiswa, total int
+	if len(mhs) != 0 {
+		condition := ""
+		if queryParams.Tahun > 2000 {
+			condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
+		}
 
-// 		if condition != "" {
-// 			condition += " WHERE "
-// 		}
+		query := fmt.Sprintf(`
+		SELECT COUNT(id_mahasiswa) FROM (
+			SELECT id_mahasiswa, prodi.id AS prodi_id from prodi
+			LEFT JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
+			AND prodi.jenjang IN ('S1','D3')
+			LEFT JOIN kampus_merdeka ON kampus_merdeka.id_mahasiswa = mahasiswa.id
+			%s
+			%s
+			UNION
+			SELECT id_mahasiswa, prodi.id AS prodi_id from prodi
+			LEFT JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
+			LEFT JOIN prestasi ON prestasi.id_mahasiswa = mahasiswa.id
+			AND prestasi.tingkat_prestasi IN ('Internasional','Nasional')
+			%s
+			%s
+		) a
+		GROUP BY prodi_id ORDER BY prodi_id
+	`, condition, fakultasConds, condition, fakultasConds)
 
-// 	query := fmt.Sprintf(`
-// 	SELECT prodi.id, prodi.kode_prodi, prodi.nama, prodi.jenjang, fakultas.id, fakultas.nama, semester.id, semester.nama, COUNT(%s.id) AS jumlah FROM %s
-// 	JOIN semester on semester.id = %s.id_semester
-// 	JOIN mahasiswa ON mahasiswa.id = %s.id_mahasiswa
-// 	JOIN prodi ON prodi.id = mahasiswa.id_prodi
-// 	JOIN fakultas ON fakultas.id = prodi.id_fakultas
-// 	%s GROUP BY prodi.id;
-// 	`, fitur, fitur, fitur, fitur, condition)
+		jumlahCapaian := []int{}
+		if err := db.WithContext(ctx).Raw(query).Find(&jumlahCapaian).Error; err != nil {
+			return util.FailedResponse(http.StatusInternalServerError, nil)
+		}
 
-// 	}
+		for i := 0; i < len(mhs); i++ {
+			totalMahasiswa += mhs[i].Jumlah
+			total += jumlahCapaian[i]
 
-// 	return util.SuccessResponse(c, http.StatusOK, data)
-// }
+			var persentase float64
+			if mhs[i].Jumlah != 0 {
+				persentase = util.RoundFloat((float64(jumlahCapaian[i]) / float64(mhs[i].Jumlah)) * 100)
+			}
+
+			prodi := fmt.Sprintf("%d - %s (%s)", mhs[i].KodeProdi, mhs[i].Prodi, mhs[i].Jenjang)
+			data.Detail = append(data.Detail, response.DashboardDetailPerProdi{
+				Prodi:           prodi,
+				JumlahMahasiswa: mhs[i].Jumlah,
+				Jumlah:          jumlahCapaian[i],
+				Persentase:      fmt.Sprintf("%.2f", persentase) + "%",
+			})
+		}
+	}
+
+	data.Total = total
+	data.TotalMahasiswa = totalMahasiswa
+
+	var pencapaian float64
+	if totalMahasiswa != 0 {
+		pencapaian = util.RoundFloat((float64(total) / float64(totalMahasiswa)) * 100)
+	}
+
+	data.Pencapaian = fmt.Sprintf("%.2f", pencapaian) + "%"
+
+	return util.SuccessResponse(c, http.StatusOK, data)
+}
 
 func GetKMDashboardByKategoriHandler(c echo.Context) error {
 	db := database.InitMySQL()
@@ -392,15 +432,4 @@ func InsertTargetHandler(c echo.Context) error {
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
-}
-
-func checkDashboardFitur(fitur string) string {
-	switch fitur {
-	case "kampus-merdeka":
-		return "kampus_merdeka"
-	case "prestasi":
-		return fitur
-	}
-
-	return ""
 }
