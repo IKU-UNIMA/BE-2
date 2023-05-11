@@ -45,8 +45,8 @@ func InsertKategoriProgramKMHandler(c echo.Context) error {
 
 func EditKategoriProgramKMHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	req := &request.KategoriProgramKm{}
@@ -70,8 +70,8 @@ func EditKategoriProgramKMHandler(c echo.Context) error {
 
 func DeleteKategoriProgramKMHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()

@@ -45,8 +45,8 @@ func InsertSemesterHandler(c echo.Context) error {
 
 func EditSemesterHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	req := &request.Semester{}
@@ -78,8 +78,8 @@ func EditSemesterHandler(c echo.Context) error {
 
 func DeleteSemesterHandler(c echo.Context) error {
 	id, err := util.GetId(c)
-	if err != "" {
-		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err})
+	if err != nil {
+		return err
 	}
 
 	db := database.InitMySQL()
