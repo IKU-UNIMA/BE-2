@@ -4,6 +4,7 @@ import (
 	"be-2/src/api/request"
 	"be-2/src/api/response"
 	"be-2/src/config/database"
+	"be-2/src/model"
 	"be-2/src/util"
 	"fmt"
 	"net/http"
@@ -113,6 +114,67 @@ func GetDashboardHandler(c echo.Context) error {
 	return util.SuccessResponse(c, http.StatusOK, data)
 }
 
+// func GetDashboardByFakultasHandler(c echo.Context) error {
+// 	queryParams := &dashboardQueryParam{}
+// 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
+// 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
+// 	}
+
+// 	fakultas, err := util.GetId(c)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	db := database.InitMySQL()
+// 	ctx := c.Request().Context()
+// 	data := []response.DetailDashboard{}
+
+// 	fakultasConds := ""
+// 	if fakultas > 0 {
+// 		fakultasConds = fmt.Sprintf("WHERE prodi.id_fakultas = %d", fakultas)
+// 	}
+
+// 	mhs := []struct {
+// 		Jumlah    int
+// 		KodeProdi int
+// 		Prodi     string
+// 		Jenjang   string
+// 	}{}
+
+// 	mhsQuery := fmt.Sprintf(`
+// 	SELECT COUNT(mahasiswa.id) as jumlah, prodi.kode_prodi, prodi.nama as prodi, prodi.jenjang FROM prodi
+// 	left JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
+// 	%s GROUP BY prodi.id ORDER BY prodi.id
+// 	`, fakultasConds)
+
+// 	if err := db.WithContext(ctx).Raw(mhsQuery).Find(&mhs).Error; err != nil {
+// 		return util.FailedResponse(http.StatusInternalServerError, nil)
+// 	}
+
+// 	if len(mhs) != 0 {
+// 		condition := ""
+// 		if queryParams.Tahun > 2000 {
+// 			condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
+// 		}
+
+// 		if condition != "" {
+// 			condition += " WHERE "
+// 		}
+
+// 	query := fmt.Sprintf(`
+// 	SELECT prodi.id, prodi.kode_prodi, prodi.nama, prodi.jenjang, fakultas.id, fakultas.nama, semester.id, semester.nama, COUNT(%s.id) AS jumlah FROM %s
+// 	JOIN semester on semester.id = %s.id_semester
+// 	JOIN mahasiswa ON mahasiswa.id = %s.id_mahasiswa
+// 	JOIN prodi ON prodi.id = mahasiswa.id_prodi
+// 	JOIN fakultas ON fakultas.id = prodi.id_fakultas
+// 	%s GROUP BY prodi.id;
+// 	`, fitur, fitur, fitur, fitur, condition)
+
+// 	}
+
+// 	return util.SuccessResponse(c, http.StatusOK, data)
+// }
+
 func GetKMDashboardByKategoriHandler(c echo.Context) error {
 	db := database.InitMySQL()
 	ctx := c.Request().Context()
@@ -147,71 +209,6 @@ func GetKMDashboardByKategoriHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
-	}
-
-	return util.SuccessResponse(c, http.StatusOK, data)
-}
-
-func GetDetailDashboardHandler(c echo.Context) error {
-	fitur := checkDashboardFitur(c.Param("fitur"))
-	if fitur == "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fitur tidak didukung"})
-	}
-
-	queryParams := &dashboardQueryParam{}
-	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
-	}
-
-	condition := ""
-	if queryParams.Tahun > 2000 {
-		condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
-	}
-
-	if queryParams.Fakultas > 0 {
-		if condition != "" {
-			condition += fmt.Sprintf(" AND fakultas.id = %d", queryParams.Fakultas)
-		} else {
-			condition = fmt.Sprintf("fakultas.id = %d", queryParams.Fakultas)
-		}
-	}
-
-	if condition != "" {
-		condition += " WHERE "
-	}
-
-	db := database.InitMySQL()
-	ctx := c.Request().Context()
-	data := []response.DetailDashboard{}
-	query := fmt.Sprintf(`
-	SELECT prodi.id, prodi.kode_prodi, prodi.nama, prodi.jenjang, fakultas.id, fakultas.nama, semester.id, semester.nama, COUNT(%s.id) AS jumlah FROM %s
-	JOIN semester on semester.id = %s.id_semester
-	JOIN mahasiswa ON mahasiswa.id = %s.id_mahasiswa
-	JOIN prodi ON prodi.id = mahasiswa.id_prodi
-	JOIN fakultas ON fakultas.id = prodi.id_fakultas
-	%s GROUP BY prodi.id;
-	`, fitur, fitur, fitur, fitur, condition)
-
-	detailDashboard := response.DetailDashboard{}
-	rows, err := db.WithContext(ctx).Raw(query).Rows()
-	if err != nil {
-		return util.FailedResponse(http.StatusInternalServerError, nil)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		rows.Scan(
-			&detailDashboard.Prodi.ID,
-			&detailDashboard.Prodi.KodeProdi,
-			&detailDashboard.Prodi.Nama,
-			&detailDashboard.Prodi.Jenjang,
-			&detailDashboard.Fakultas.ID,
-			&detailDashboard.Fakultas.Nama,
-			&detailDashboard.Semester.Id,
-			&detailDashboard.Semester.Nama,
-			&detailDashboard.Jumlah,
-		)
-		data = append(data, detailDashboard)
 	}
 
 	return util.SuccessResponse(c, http.StatusOK, data)
@@ -332,6 +329,46 @@ func GetDashboardUmumHandler(c echo.Context) error {
 	if err := db.WithContext(ctx).Raw(mahasiswaQuery).Find(data).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
+
+	return util.SuccessResponse(c, http.StatusOK, data)
+}
+
+func GetDashboardMahasiswa(c echo.Context) error {
+	id := int(util.GetClaimsFromContext(c)["id"].(float64))
+	db := database.InitMySQL()
+	ctx := c.Request().Context()
+	data := []response.TotalDashboard{}
+	if err := db.WithContext(ctx).First(new(model.Mahasiswa), "id", id).Error; err != nil {
+		if err.Error() == util.NOT_FOUND_ERROR {
+			return util.FailedResponse(http.StatusNotFound, map[string]string{"message": "mahasiswa tidak ditemukan"})
+		}
+
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	query := func(fitur string) string {
+		return fmt.Sprintf(`
+		SELECT COUNT(%s.id) AS total FROM %s WHERE %s.id_mahasiswa = %d
+		`, fitur, fitur, fitur, id)
+	}
+
+	// get kampus merdeka
+	if err := db.Raw(query("kampus_merdeka")).Find(&data).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	data[0].Nama = "Kampus Merdeka"
+
+	// get prestasi
+	prestasi := 0
+	if err := db.Raw(query("prestasi")).Find(&prestasi).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	data = append(data, response.TotalDashboard{
+		Nama:  "Prestasi",
+		Total: prestasi,
+	})
 
 	return util.SuccessResponse(c, http.StatusOK, data)
 }

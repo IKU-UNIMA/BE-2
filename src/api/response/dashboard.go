@@ -17,6 +17,20 @@ type (
 		Persentase      string `json:"persentase"`
 	}
 
+	// DashboardPerProdi struct {
+	// 	Total      int                       `json:"total"`
+	// 	TotalDosen int                       `json:"total_dosen"`
+	// 	Pencapaian string                    `json:"pencapaian"`
+	// 	Detail     []DashboardDetailPerProdi `json:"detail"`
+	// }
+
+	// DashboardDetailPerProdi struct {
+	// 	Prodi       string `json:"prodi"`
+	// 	JumlahDosen int    `json:"jumlah_dosen"`
+	// 	Jumlah      int    `json:"jumlah"`
+	// 	Persentase  string `json:"persentase"`
+	// }
+
 	DetailDashboard struct {
 		Prodi struct {
 			ID        int    `json:"id"`
