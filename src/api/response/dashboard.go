@@ -2,9 +2,19 @@ package response
 
 type (
 	Dashboard struct {
-		ID     int    `json:"-"`
-		Nama   string `json:"nama"`
-		Jumlah int    `json:"jumlah"`
+		Target         string                       `json:"target"`
+		Total          int                          `json:"total"`
+		TotalMahasiswa int                          `json:"total_mahasiswa"`
+		Pencapaian     string                       `json:"pencapaian"`
+		Detail         []DashboardDetailPerFakultas `json:"detail"`
+	}
+
+	DashboardDetailPerFakultas struct {
+		ID              int    `json:"id"`
+		Fakultas        string `json:"fakultas"`
+		JumlahMahasiswa int    `json:"jumlah_mahasiswa"`
+		Jumlah          int    `json:"jumlah"`
+		Persentase      string `json:"persentase"`
 	}
 
 	DetailDashboard struct {

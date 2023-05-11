@@ -15,39 +15,100 @@ type dashboardQueryParam struct {
 	Fakultas int `query:"fakultas"`
 	Prodi    int `query:"prodi"`
 	Tahun    int `query:"tahun"`
-	Semester int `query:"semester"`
 }
 
 func GetDashboardHandler(c echo.Context) error {
-	fitur := checkDashboardFitur(c.Param("fitur"))
-	if fitur == "" {
-		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "fitur tidak didukung"})
-	}
-
-	db := database.InitMySQL()
-	ctx := c.Request().Context()
-	data := []response.Dashboard{}
-
 	queryParams := &dashboardQueryParam{}
 	if err := (&echo.DefaultBinder{}).BindQueryParams(c, queryParams); err != nil {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
+
 	condition := ""
 	if queryParams.Tahun > 2000 {
-		condition = fmt.Sprintf(" WHERE YEAR(created_at) = %d", queryParams.Tahun)
+		condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
+	}
+
+	db := database.InitMySQL()
+	ctx := c.Request().Context()
+	data := &response.Dashboard{}
+
+	var target float64
+	targetQuery := fmt.Sprintf(`
+	SELECT target FROM target
+	WHERE bagian = 'IKU 2' AND tahun = %d
+	`, queryParams.Tahun)
+	if err := db.WithContext(ctx).Raw(targetQuery).Find(&target).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	data.Target = fmt.Sprintf("%.1f", util.RoundFloat(target))
+
+	mhs := []struct {
+		ID       int
+		Fakultas string
+		Jumlah   int
+	}{}
+
+	mhsQuery := `
+	SELECT fakultas.id, fakultas.nama AS fakultas, COUNT(mahasiswa.id) AS jumlah FROM fakultas
+	left JOIN prodi ON prodi.id_fakultas = fakultas.id
+	left join mahasiswa ON mahasiswa.id_prodi = prodi.id
+	GROUP BY fakultas.id ORDER BY fakultas.id
+	`
+
+	if err := db.WithContext(ctx).Raw(mhsQuery).Find(&mhs).Error; err != nil {
+		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
 	query := fmt.Sprintf(`
-	SELECT fakultas.id, fakultas.nama, COUNT(*) AS jumlah FROM %s
-	JOIN mahasiswa on mahasiswa.id = %s.id_mahasiswa
-	JOIN prodi on prodi.id = mahasiswa.id_prodi
-	JOIN fakultas on fakultas.id = prodi.id_fakultas
-	%s GROUP BY fakultas.id;
-	`, fitur, fitur, condition)
+	SELECT COUNT(id_mahasiswa) AS jumlah FROM (
+		SELECT id_mahasiswa, id_fakultas from prodi
+		LEFT JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
+		AND prodi.jenjang IN ('S1','D3')
+		LEFT JOIN kampus_merdeka ON kampus_merdeka.id_mahasiswa = mahasiswa.id
+		%s
+		UNION
+		SELECT id_mahasiswa, id_fakultas from prodi
+		LEFT JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
+		LEFT JOIN prestasi ON prestasi.id_mahasiswa = mahasiswa.id
+		AND prestasi.tingkat_prestasi IN ('Internasional','Nasional')
+		%s
+	) a
+	GROUP BY id_fakultas ORDER BY id_fakultas
+	`, condition, condition)
 
-	if err := db.WithContext(ctx).Raw(query).Find(&data).Error; err != nil {
+	jumlahCapaian := []int{}
+	if err := db.WithContext(ctx).Raw(query).Find(&jumlahCapaian).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
+
+	var totalMahasiswa, total int
+	for i := 0; i < len(mhs); i++ {
+		totalMahasiswa += mhs[i].Jumlah
+		total += jumlahCapaian[i]
+
+		var persentase float64
+		if mhs[i].Jumlah != 0 {
+			persentase = util.RoundFloat((float64(jumlahCapaian[i]) / float64(mhs[i].Jumlah)) * 100)
+		}
+
+		data.Detail = append(data.Detail, response.DashboardDetailPerFakultas{
+			ID:         mhs[i].ID,
+			Fakultas:   mhs[i].Fakultas,
+			Jumlah:     jumlahCapaian[i],
+			Persentase: fmt.Sprintf("%.2f", persentase) + "%",
+		})
+	}
+
+	data.Total = total
+	data.TotalMahasiswa = totalMahasiswa
+
+	var pencapaian float64
+	if totalMahasiswa != 0 {
+		pencapaian = util.RoundFloat((float64(total) / float64(totalMahasiswa)) * 100)
+	}
+
+	data.Pencapaian = fmt.Sprintf("%.2f", pencapaian) + "%"
 
 	return util.SuccessResponse(c, http.StatusOK, data)
 }
@@ -103,17 +164,8 @@ func GetDetailDashboardHandler(c echo.Context) error {
 	}
 
 	condition := ""
-	if queryParams.Semester > 0 {
-		condition = fmt.Sprintf("id_semester = %d", queryParams.Semester)
-		queryParams.Tahun = 0
-	}
-
 	if queryParams.Tahun > 2000 {
-		if condition != "" {
-			condition = fmt.Sprintf(" AND YEAR(created_at) = %d", queryParams.Tahun)
-		} else {
-			condition = fmt.Sprintf("YEAR(created_at) = %d", queryParams.Tahun)
-		}
+		condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
 	}
 
 	if queryParams.Fakultas > 0 {
