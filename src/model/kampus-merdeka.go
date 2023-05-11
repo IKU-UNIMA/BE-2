@@ -15,8 +15,8 @@ type KampusMerdeka struct {
 	NoSkTugas               string    `gorm:"type:varchar(255)"`
 	TanggalSkTugas          time.Time `gorm:"type:date"`
 	JenisAnggota            string    `gorm:"type:varchar(255)"`
-	Ips                     float32   `gorm:"type:varchar(255)"`
-	Ipk                     float32   `gorm:"type:varchar(255)"`
+	Ips                     float32
+	Ipk                     float32
 	JumlahSks               int
 	TotalSks                int
 	BiayaKuliah             float32
