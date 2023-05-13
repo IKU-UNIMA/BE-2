@@ -18,6 +18,7 @@ type (
 	}
 
 	DashboardPerProdi struct {
+		Fakultas       string                    `json:"fakultas"`
 		Total          int                       `json:"total"`
 		TotalMahasiswa int                       `json:"total_mahasiswa"`
 		Pencapaian     string                    `json:"pencapaian"`
