@@ -120,7 +120,7 @@ func GetDashboardByFakultasHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
-	fakultas, err := util.GetId(c)
+	idFakultas, err := util.GetId(c)
 	if err != nil {
 		return err
 	}
@@ -131,9 +131,19 @@ func GetDashboardByFakultasHandler(c echo.Context) error {
 	data.Detail = []response.DashboardDetailPerProdi{}
 
 	fakultasConds := ""
-	if fakultas > 0 {
-		fakultasConds = fmt.Sprintf("WHERE prodi.id_fakultas = %d", fakultas)
+	if idFakultas > 0 {
+		fakultasConds = fmt.Sprintf("WHERE prodi.id_fakultas = %d", idFakultas)
 	}
+
+	fakultas := ""
+	if err := db.WithContext(ctx).Raw("SELECT nama FROM fakultas WHERE id = ?", idFakultas).First(&fakultas).Error; err != nil {
+		if err.Error() == util.NOT_FOUND_ERROR {
+			return util.FailedResponse(http.StatusNotFound, nil)
+		}
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
+	data.Fakultas = fakultas
 
 	mhs := []struct {
 		Jumlah    int
