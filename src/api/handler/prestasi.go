@@ -83,7 +83,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 	}
 
 	var totalResult int64
-	if err := db.WithContext(ctx).Table("dosen").Count(&totalResult).Error; err != nil {
+	if err := db.WithContext(ctx).Table("dosen").Where(condition).Count(&totalResult).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
