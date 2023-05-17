@@ -41,14 +41,9 @@ func GetAllKMHandler(c echo.Context) error {
 	role := claims["role"].(string)
 	id := int(claims["id"].(float64))
 	idProdi := int(claims["id_prodi"].(float64))
-	nim := 0
 
 	if role == string(util.MAHASISWA) {
-		if err := db.WithContext(ctx).Table("mahasiswa").Select("nim").Where("id", id).Scan(&nim).Error; err != nil {
-			return util.FailedResponse(http.StatusInternalServerError, nil)
-		}
-
-		condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+		condition = fmt.Sprintf("id_mahasiswa = %d", id)
 	} else {
 		if role == string(util.OPERATOR) {
 			queryParams.Prodi = idProdi
