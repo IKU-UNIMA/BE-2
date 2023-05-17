@@ -40,21 +40,16 @@ func GetAllPrestasiHandler(c echo.Context) error {
 	role := claims["role"].(string)
 	id := int(claims["id"].(float64))
 	idProdi := int(claims["id_prodi"].(float64))
-	nim := 0
 
 	if role == string(util.MAHASISWA) {
-		if err := db.WithContext(ctx).Table("mahasiswa").Select("nim").Where("id", id).Scan(&nim).Error; err != nil {
-			return util.FailedResponse(http.StatusInternalServerError, nil)
-		}
-
-		condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+		condition = fmt.Sprintf("id_mahasiswa = %d", id)
 	} else {
 		if role == string(util.OPERATOR) {
 			queryParams.Prodi = idProdi
 		}
 
 		if queryParams.Nim != 0 {
-			condition = fmt.Sprintf("mahasiswa.nim = %d", nim)
+			condition = fmt.Sprintf("mahasiswa.nim = %d", queryParams.Nim)
 		}
 
 		if queryParams.Prodi != 0 {
@@ -74,7 +69,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 		}
 	}
 
-	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").
+	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").Debug().
 		Joins("JOIN mahasiswa ON mahasiswa.id = prestasi.id_mahasiswa").
 		Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).Order("created_at DESC").
