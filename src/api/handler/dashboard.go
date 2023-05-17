@@ -94,10 +94,11 @@ func GetDashboardHandler(c echo.Context) error {
 		}
 
 		data.Detail = append(data.Detail, response.DashboardDetailPerFakultas{
-			ID:         mhs[i].ID,
-			Fakultas:   mhs[i].Fakultas,
-			Jumlah:     jumlahCapaian[i],
-			Persentase: fmt.Sprintf("%.2f", persentase) + "%",
+			ID:              mhs[i].ID,
+			Fakultas:        mhs[i].Fakultas,
+			JumlahMahasiswa: mhs[i].Jumlah,
+			Jumlah:          jumlahCapaian[i],
+			Persentase:      fmt.Sprintf("%.2f", persentase) + "%",
 		})
 	}
 
