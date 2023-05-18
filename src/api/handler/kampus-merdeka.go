@@ -36,6 +36,7 @@ func GetAllKMHandler(c echo.Context) error {
 	result := []response.KampusMerdeka{}
 	limit := 20
 	condition := ""
+	join := ""
 
 	claims := util.GetClaimsFromContext(c)
 	role := claims["role"].(string)
@@ -45,6 +46,7 @@ func GetAllKMHandler(c echo.Context) error {
 	if role == string(util.MAHASISWA) {
 		condition = fmt.Sprintf("id_mahasiswa = %d", id)
 	} else {
+		join = "JOIN mahasiswa ON mahasiswa.id = kampus_merdeka.id_mahasiswa"
 		if role == string(util.OPERATOR) {
 			queryParams.Prodi = idProdi
 		}
@@ -80,7 +82,7 @@ func GetAllKMHandler(c echo.Context) error {
 
 	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").
 		Preload("Semester").Preload("KategoriProgram").
-		Joins("JOIN mahasiswa ON mahasiswa.id = kampus_merdeka.id_mahasiswa").
+		Joins(join).
 		Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).Order("created_at DESC").
 		Find(&result).Error; err != nil {
@@ -88,7 +90,9 @@ func GetAllKMHandler(c echo.Context) error {
 	}
 
 	var totalResult int64
-	if err := db.WithContext(ctx).Table("kampus_merdeka").Where(condition).Count(&totalResult).Error; err != nil {
+	if err := db.WithContext(ctx).Table("kampus_merdeka").
+		Joins(join).
+		Where(condition).Count(&totalResult).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
