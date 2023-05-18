@@ -69,7 +69,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 		}
 	}
 
-	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").Debug().
+	if err := db.WithContext(ctx).Preload("Mahasiswa.Prodi.Fakultas").Preload("Semester").
 		Joins("JOIN mahasiswa ON mahasiswa.id = prestasi.id_mahasiswa").
 		Where(condition).
 		Offset(util.CountOffset(queryParams.Page, limit)).Limit(limit).Order("created_at DESC").
@@ -78,7 +78,9 @@ func GetAllPrestasiHandler(c echo.Context) error {
 	}
 
 	var totalResult int64
-	if err := db.WithContext(ctx).Table("dosen").Where(condition).Count(&totalResult).Error; err != nil {
+	if err := db.WithContext(ctx).Table("prestasi").
+		Joins("JOIN mahasiswa ON mahasiswa.id = prestasi.id_mahasiswa").
+		Where(condition).Count(&totalResult).Error; err != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
