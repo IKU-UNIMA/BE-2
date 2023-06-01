@@ -63,19 +63,21 @@ func GetDashboardHandler(c echo.Context) error {
 
 	query := fmt.Sprintf(`
 	SELECT COUNT(id_mahasiswa) AS jumlah FROM (
-		SELECT id_mahasiswa, id_fakultas from prodi
+		SELECT id_mahasiswa, fakultas.id AS fakultas_id from fakultas
+		LEFT JOIN prodi ON prodi.id_fakultas = fakultas.id
 		LEFT JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
 		AND prodi.jenjang IN ('S1','D3')
 		LEFT JOIN kampus_merdeka ON kampus_merdeka.id_mahasiswa = mahasiswa.id
 		%s
 		UNION
-		SELECT id_mahasiswa, id_fakultas from prodi
+		SELECT id_mahasiswa, fakultas.id AS fakultas_id from fakultas
+		LEFT JOIN prodi ON prodi.id_fakultas = fakultas.id
 		LEFT JOIN mahasiswa ON mahasiswa.id_prodi = prodi.id
 		LEFT JOIN prestasi ON prestasi.id_mahasiswa = mahasiswa.id
 		AND prestasi.tingkat_prestasi IN ('Internasional','Nasional')
 		%s
 	) a
-	GROUP BY id_fakultas ORDER BY id_fakultas
+	GROUP BY fakultas_id ORDER BY fakultas_id
 	`, condition, condition)
 
 	jumlahCapaian := []int{}
