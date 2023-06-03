@@ -258,6 +258,15 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
+	oldSertifikat := ""
+	if err := db.WithContext(ctx).Model(new(model.Prestasi)).Select("dokumen").First(&oldSertifikat, "id", id).Error; err != nil {
+		if err.Error() == util.NOT_FOUND_ERROR {
+			return util.FailedResponse(http.StatusNotFound, map[string]string{"message": "kerjasama tidak ditemukan"})
+		}
+
+		return util.FailedResponse(http.StatusInternalServerError, nil)
+	}
+
 	dSertifikat, errDrive := storage.CreateFile(sertifikat, env.GetPrestasiFolderId())
 	if errDrive != nil {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
@@ -268,6 +277,8 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 		storage.DeleteFile(dSertifikat.Id)
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
+
+	storage.DeleteFile(util.GetFileIdFromUrl(oldSertifikat))
 
 	return util.SuccessResponse(c, http.StatusOK, nil)
 }
