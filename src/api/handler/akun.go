@@ -21,7 +21,7 @@ func LoginHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &model.Akun{}
 
@@ -69,7 +69,7 @@ func ChangePasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &model.Akun{}
 	claims := util.GetClaimsFromContext(c)
@@ -96,7 +96,7 @@ func ResetPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := db.WithContext(ctx).First(new(model.Akun), "id", id).Error; err != nil {

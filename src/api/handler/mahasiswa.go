@@ -28,7 +28,7 @@ func GetAllMahasiswaHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.Mahasiswa{}
 	limit := 20
@@ -79,7 +79,7 @@ func GetMahasiswaByIdHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &response.Mahasiswa{}
 
@@ -105,7 +105,7 @@ func InsertMahasiswaHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	tx := db.Begin()
 	ctx := c.Request().Context()
 	akun := &model.Akun{}
@@ -157,7 +157,7 @@ func EditMahasiswaHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	tx := db.Begin()
 	ctx := c.Request().Context()
 
@@ -203,7 +203,7 @@ func DeleteMahasiswaHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	query := db.WithContext(ctx).Delete(new(model.Akun), id)

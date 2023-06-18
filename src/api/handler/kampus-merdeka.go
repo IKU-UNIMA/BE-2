@@ -31,7 +31,7 @@ func GetAllKMHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	result := []response.KampusMerdeka{}
 	limit := 20
@@ -111,7 +111,7 @@ func GetKMByIdHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	result := &response.DetailKampusMerdeka{}
 
@@ -149,7 +149,7 @@ func InsertKMHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	claims := util.GetClaimsFromContext(c)
 	idMahasiswa := int(claims["id"].(float64))
@@ -205,7 +205,7 @@ func EditKMHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := kmAuthorization(c, id, db, ctx); err != nil {
@@ -231,7 +231,7 @@ func DeleteKMHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := kmAuthorization(c, id, db, ctx); err != nil {
@@ -274,7 +274,7 @@ func EditSuratTugasHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := kmAuthorization(c, id, db, ctx); err != nil {
@@ -321,7 +321,7 @@ func EditBeritaAcaraHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := kmAuthorization(c, id, db, ctx); err != nil {
