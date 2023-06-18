@@ -30,7 +30,7 @@ func GetAllPrestasiHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 	result := []response.Prestasi{}
 	limit := 20
@@ -99,7 +99,7 @@ func GetPrestasiByIdHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 	result := &response.DetailPrestasi{}
 
@@ -134,7 +134,7 @@ func InsertPrestasiHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 	claims := util.GetClaimsFromContext(c)
 	idMahasiswa := int(claims["id"].(float64))
@@ -186,7 +186,7 @@ func EditPrestasiHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	if errAuth := prestasiAuthorization(c, id, db, ctx); errAuth != nil {
@@ -207,7 +207,7 @@ func DeletePrestasiHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	if errAuth := prestasiAuthorization(c, id, db, ctx); errAuth != nil {
@@ -242,7 +242,7 @@ func EditSertifikatPrestasiHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	if errAuth := prestasiAuthorization(c, id, db, ctx); errAuth != nil {
