@@ -27,7 +27,7 @@ func GetAllOperatorHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	result := []response.Operator{}
 	limit := 20
@@ -66,7 +66,7 @@ func GetOperatorByIdHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	result := &response.Operator{}
 
@@ -92,7 +92,7 @@ func InsertOperatorHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	tx := db.Begin()
 	ctx := c.Request().Context()
 	akun := &model.Akun{}
@@ -144,7 +144,7 @@ func EditOperatorHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	tx := db.Begin()
 	ctx := c.Request().Context()
 
@@ -190,7 +190,7 @@ func DeleteOperatorHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	query := db.WithContext(ctx).Delete(new(model.Akun), id)

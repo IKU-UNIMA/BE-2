@@ -29,7 +29,7 @@ func GetDashboardHandler(c echo.Context) error {
 		condition = fmt.Sprintf("AND YEAR(created_at) = %d", queryParams.Tahun)
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &response.Dashboard{}
 
@@ -128,7 +128,7 @@ func GetDashboardByFakultasHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &response.DashboardPerProdi{}
 	data.Detail = []response.DashboardDetailPerProdi{}
@@ -229,7 +229,7 @@ func GetDashboardByFakultasHandler(c echo.Context) error {
 }
 
 func GetKMDashboardByKategoriHandler(c echo.Context) error {
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.KategoriDashboard{}
 
@@ -268,7 +268,7 @@ func GetKMDashboardByKategoriHandler(c echo.Context) error {
 }
 
 func GetPrestasiDashboardByTingkatHandler(c echo.Context) error {
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.KategoriDashboard{}
 
@@ -305,7 +305,7 @@ func GetPrestasiDashboardByTingkatHandler(c echo.Context) error {
 }
 
 func GetTotalDashboardHandler(c echo.Context) error {
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.TotalDashboard{}
 
@@ -359,7 +359,7 @@ func GetTotalDashboardHandler(c echo.Context) error {
 }
 
 func GetDashboardUmumHandler(c echo.Context) error {
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := &response.DashboardUmum{}
 	fakultasQuery := `SELECT COUNT(id) AS fakultas FROM fakultas`
@@ -388,7 +388,7 @@ func GetDashboardUmumHandler(c echo.Context) error {
 
 func GetDashboardMahasiswa(c echo.Context) error {
 	id := int(util.GetClaimsFromContext(c)["id"].(float64))
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.TotalDashboard{}
 	if err := db.WithContext(ctx).First(new(model.Mahasiswa), "id", id).Error; err != nil {
@@ -436,7 +436,7 @@ func InsertTargetHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	conds := fmt.Sprintf("bagian='%s' AND tahun=%d", util.IKU2, req.Tahun)
 

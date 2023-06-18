@@ -10,11 +10,8 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-var DB *gorm.DB
-
-func InitMySQL() {
-	var err error
-	DB, err = gorm.Open(mysql.Open(env.GetMySQLEnv()), &gorm.Config{
+func InitMySQL() *gorm.DB {
+	db, err := gorm.Open(mysql.Open(env.GetMySQLEnv()), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
@@ -23,10 +20,12 @@ func InitMySQL() {
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)
 	}
+
+	return db
 }
 
 func MigrateMySQL() {
-	DB.AutoMigrate(
+	InitMySQL().AutoMigrate(
 		&model.Fakultas{},
 		&model.Prodi{},
 		&model.Semester{},

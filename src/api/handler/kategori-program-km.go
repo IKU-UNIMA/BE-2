@@ -12,7 +12,7 @@ import (
 )
 
 func GetAllKategoriProgramProgramKMHandler(c echo.Context) error {
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 	data := []response.KategoriProgramKm{}
 
@@ -33,7 +33,7 @@ func InsertKategoriProgramKMHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := db.WithContext(ctx).Create(req.MapRequest()).Error; err != nil {
@@ -58,7 +58,7 @@ func EditKategoriProgramKMHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	if err := db.WithContext(ctx).Where("id", id).Updates(req.MapRequest()).Error; err != nil {
@@ -74,7 +74,7 @@ func DeleteKategoriProgramKMHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.DB
+	db := database.InitMySQL()
 	ctx := c.Request().Context()
 
 	query := db.WithContext(ctx).Delete(new(model.KategoriProgramKm), "id", id)
