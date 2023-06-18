@@ -12,7 +12,7 @@ import (
 )
 
 func GetAllSemesterHandler(c echo.Context) error {
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 	data := []response.Semester{}
 
@@ -33,7 +33,7 @@ func InsertSemesterHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	if err := db.WithContext(ctx).Create(req.MapRequest()).Error; err != nil {
@@ -58,7 +58,7 @@ func EditSemesterHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	if err := db.WithContext(ctx).First(new(model.Semester), id).Error; err != nil {
@@ -82,7 +82,7 @@ func DeleteSemesterHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	query := db.WithContext(ctx).Delete(new(model.Fakultas), id)
