@@ -27,7 +27,7 @@ func GetAllDosenHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusUnprocessableEntity, map[string]string{"message": err.Error()})
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 	result := []response.Dosen{}
 	limit := 20
@@ -84,7 +84,7 @@ func GetDosenByIdHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 	result := &response.DetailDosen{}
 
@@ -122,7 +122,7 @@ func InsertDosenHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	tx := db.Begin()
 	ctx := c.Request().Context()
 	akun := &model.Akun{}
@@ -190,7 +190,7 @@ func EditDosenHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	tx := db.Begin()
 	ctx := c.Request().Context()
 
@@ -253,7 +253,7 @@ func DeleteDosenHandler(c echo.Context) error {
 		return err
 	}
 
-	db := database.InitMySQL()
+	db := database.DB
 	ctx := c.Request().Context()
 
 	query := db.WithContext(ctx).Delete(new(model.Akun), id)
