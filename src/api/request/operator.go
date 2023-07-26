@@ -5,7 +5,7 @@ import "be-2/src/model"
 type Operator struct {
 	Nama    string `json:"nama" validate:"required"`
 	Nip     string `json:"nip" validate:"required"`
-	Email   string `json:"email" validate:"required,email"`
+	Email   string `json:"email" validate:"required"`
 	IdProdi int    `json:"id_prodi" validate:"required"`
 }
 

@@ -109,7 +109,7 @@ func InsertMahasiswaHandler(c echo.Context) error {
 	tx := db.Begin()
 	ctx := c.Request().Context()
 	akun := &model.Akun{}
-	akun.Email = request.Email
+	akun.Email = request.Nim
 	akun.Role = string(util.MAHASISWA)
 	password := util.GeneratePassword()
 	akun.Password = util.HashPassword(password)
@@ -169,7 +169,7 @@ func EditMahasiswaHandler(c echo.Context) error {
 		return util.FailedResponse(http.StatusInternalServerError, nil)
 	}
 
-	if err := tx.WithContext(ctx).Table("akun").Where("id", id).Update("email", request.Email).Error; err != nil {
+	if err := tx.WithContext(ctx).Table("akun").Where("id", id).Update("email", request.Nim).Error; err != nil {
 		tx.Rollback()
 		if strings.Contains(err.Error(), util.UNIQUE_ERROR) {
 			return util.FailedResponse(http.StatusBadRequest, map[string]string{"message": "email sudah digunakan"})
