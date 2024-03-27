@@ -8,7 +8,7 @@ import (
 
 type KampusMerdeka struct {
 	IdSemester              int     `form:"id_semester" validate:"required"`
-	IdDosenPembimbing       int     `form:"id_dosen_pembimbing" validate:"required"`
+	IdDosenPembimbing       int     `form:"id_dosen_pembimbing"`
 	IdKategoriProgram       int     `form:"id_kategori_program" validate:"required"`
 	StatusKeikutsertaan     string  `form:"status_keikutsertaan" validate:"required"`
 	KontrakKrs              bool    `form:"kontrak_krs" validate:"required"`
