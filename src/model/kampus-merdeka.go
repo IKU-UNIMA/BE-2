@@ -6,7 +6,7 @@ type KampusMerdeka struct {
 	ID                      int `gorm:"primaryKey"`
 	IdMahasiswa             int
 	IdSemester              int
-	IdDosenPembimbing       int
+	IdDosenPembimbing       int `gorm:"default:null"`
 	IdKategoriProgram       int
 	StatusKeikutsertaan     string `gorm:"type:varchar(255)"`
 	KontrakKrs              bool
