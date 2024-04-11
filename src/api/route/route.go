@@ -107,9 +107,9 @@ func InitServer() *echo.Echo {
 	kampusMerdeka.PATCH("/:id/berita-acara", handler.EditBeritaAcaraHandler, customMiddleware.GrantAdminIKU2OperatorAndMahasiswa)
 
 	dashboard := v1.Group("/dashboard", customMiddleware.Authentication)
-	dashboard.GET("", handler.GetDashboardHandler, customMiddleware.GrantAdminIKU2AndRektor)
+	dashboard.GET("", handler.GetDashboardHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
 	dashboard.GET("/kampus-merdeka/kategori", handler.GetKMDashboardByKategoriHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
-	dashboard.GET("/fakultas/:id", handler.GetDashboardByFakultasHandler, customMiddleware.GrantAdminIKU2AndRektor)
+	dashboard.GET("/fakultas/:id", handler.GetDashboardByFakultasHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
 	dashboard.GET("/prestasi/tingkat", handler.GetPrestasiDashboardByTingkatHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
 	dashboard.GET("/total", handler.GetTotalDashboardHandler, customMiddleware.GrantAdminIKU2OperatorAndRektor)
 	dashboard.GET("/umum", handler.GetDashboardUmumHandler, customMiddleware.GrantAdminUmum)
